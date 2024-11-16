@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Disease Prediction System</title>
+    <link rel="stylesheet" href="./static/styles.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<header>
+    <nav>
+        <ul class="nav-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><a href="{{ url_for('index') }}">Logout</a></li>
+        </ul>
+    </nav>
+</header>
+
+<section id="home">
+    <div class="hero">
+        <h1>Crop Disease Prediction System</h1>
+        <p>Empowering Farmers with Precision and Transparency</p>
+        <button class="btn btn-primary" data-toggle="modal" data-target="#plantModal">Plant Detection</button>
+        <button class="btn btn-secondary" data-toggle="modal" data-target="#diseaseModal">Disease Detection</button>
+    </div>
+</section>
+
+<!-- About Section -->
+<section id="about" class="section">
+    <h2>About the System</h2>
+    <p>Our AI-powered system helps detect crop diseases, providing real-time, data-driven insights to farmers, researchers, and developers.</p>
+    <div class="features">
+        <div class="feature">
+            <h3>Real-time Detection</h3>
+        </div>
+        <div class="feature">
+            <h3>Data-Driven Insights</h3>
+        </div>
+        <div class="feature">
+            <h3>Explainable AI</h3>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section id="contact" class="section">
+    <h2>Contact Us</h2>
+    <form class="contact-form">
+        <input type="text" placeholder="Name" required>
+        <input type="email" placeholder="Email" required>
+        <textarea placeholder="Message"></textarea>
+        <button type="submit">Send Message</button>
+    </form>
+    <div class="contact-info">
+        <p>Email: contact@cropprediction.com</p>
+        <p>Phone: +123 456 7890</p>
+    </div>
+</section>
+
+<!-- Plant Detection Modal -->
+<div class="modal fade" id="plantModal" tabindex="-1" role="dialog" aria-labelledby="plantModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="plantModalLabel">Plant Detection</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="plantForm" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <input type="file" name="file" id="plantFile" required>
+                    </div>
+                    <button type="button" class="btn btn-primary btn-block" onclick="submitPlantForm()">Upload</button>
+                </form>
+                <div id="loadingPlant" style="display:none;">Loading...</div>
+                <br>
+                <br>
+                <br>
+                <h4 id="plantResult"></h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Disease Detection Modal -->
+<div class="modal fade" id="diseaseModal" tabindex="-1" role="dialog" aria-labelledby="diseaseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="diseaseModalLabel">Disease Detection</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="diseaseForm" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <input type="file" name="file" id="diseaseFile" required>
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-block" onclick="submitDiseaseForm()">Upload</button>
+                </form>
+                <div id="loadingDisease" style="display:none;">Loading...</div>
+                <h4 id="Plant"></h4>
+                <h4 id="Disease"></h4>
+                <h4 id="Message"></h4>
+                <p><strong>Grad-CAM:</strong></p>
+                <img id="gradcamImg" alt="Grad-CAM Image" class="img-thumbnail mb-4">
+                <p><strong>LIME Explanation:</strong></p>
+                <img id="limeImg" alt="LIME Explanation Image" class="img-thumbnail mb-4">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    function submitPlantForm() {
+        $("#loadingPlant").show();
+        var formData = new FormData(document.getElementById("plantForm"));
+        $.ajax({
+            url: "/plant_detection",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                $("#loadingPlant").hide();
+                $("#plantResult").text("Plant: " + response.Plant);
+            },
+            error: function() {
+                $("#loadingPlant").hide();
+                alert("Error occurred.");
+            }
+        });
+    }
+
+    function submitDiseaseForm() {
+        $("#loadingDisease").show();
+        var formData = new FormData(document.getElementById("diseaseForm"));
+        $.ajax({
+            url: "/disease_detection",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                $("#loadingDisease").hide();
+                $('#Plant').text("Plant: " + response.Plant);
+                $('#Disease').text("Disease: " + response.Disease);
+                $('#Message').text(response.Message);
+                $('#gradcamImg').attr("src", "data:image/png;base64," + response.gradcam_img);
+                $('#limeImg').attr("src", "data:image/png;base64," + response.lime_img);
+            },
+            error: function() {
+                $("#loadingDisease").hide();
+                alert("Error occurred.");
+            }
+        });
+    }
+</script>
+</body>
+</html>

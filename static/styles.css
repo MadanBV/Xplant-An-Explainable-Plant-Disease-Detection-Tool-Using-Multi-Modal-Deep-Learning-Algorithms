@@ -1,0 +1,133 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    line-height: 1.6;
+    color: #333;
+}
+
+header {
+    background-color: #2E8B57;
+    padding: 1rem;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.nav-links a {
+    color: #100f0f;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+}
+
+.nav-links .dropdown {
+    position: relative;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #fff;
+    color: #333;
+    min-width: 160px;
+    top: 40px;
+    border: 1px solid #0c0c0c;
+    z-index: 1;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-content a {
+    padding: 0.5rem;
+    display: block;
+    color: #333;
+    text-decoration: none;
+}
+
+.dropdown-content a:hover {
+    background-color: #f2f2f2;
+}
+
+#home {
+    background: url('crop-field.jpg') no-repeat center center/cover;
+    height: 100vh;
+    color: #fcfbfb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 2rem;
+}
+
+#home h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+#home button {
+    margin: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background-color: #2E8B57;
+    border: none;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+#home button:hover {
+    background-color: #206040;
+}
+
+.section {
+    padding: 3rem 2rem;
+    text-align: center;
+}
+
+.features {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 2rem;
+}
+
+.feature {
+    padding: 1rem;
+    background: #f9f9f9;
+    width: 30%;
+}
+
+.contact-form {
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.contact-form input, .contact-form textarea {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+}
+
+.contact-form button {
+    padding: 0.75rem;
+    background-color: #2E8B57;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+.contact-info {
+    margin-top: 1.5rem;
+    font-size: 1rem;
+    color: #555;
+}
