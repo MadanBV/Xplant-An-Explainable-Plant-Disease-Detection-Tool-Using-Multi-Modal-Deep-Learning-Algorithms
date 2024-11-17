@@ -3,11 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crop Disease Detection</title>
+    <title>Intelligent Agriculture Suggestion System</title>
+    <link rel="stylesheet" href="./static/styles.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-    <div class="container mt-5">
-        <h2 class="text-center">Crop Disease Detection</h2>
-        <p class="text-center">Developer Dashboard</p>
+<header>
+    <nav>
+        <ul class="nav-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><a href="{{ url_for('index') }}">Logout</a></li>
+        </ul>
+    </nav>
+</header>
+
+<section id="home">
+    <div class="hero">
+        <h1>INTELLIGENT AGRICULTURE SUGGESTION SYSTEM</h1>
+        <p>Empower Farming with Precision and Transparency</p>
+        <button class="btn btn-primary" data-toggle="modal" data-target="#plantModal">Plant Detection</button>
+        <button class="btn btn-secondary" data-toggle="modal" data-target="#diseaseModal">Disease Detection</button>
+    </div>
+</section>
+
+<!-- About Section -->
+<section id="about" class="section">
+    <h2>About the System</h2>
+    <p>Our AI-powered system helps detect crop diseases, providing real-time, data-driven insights to farmers, researchers, and developers.</p>
+    <div class="features">
+        <div class="feature">
+            <h3>Real-time Detection</h3>
+        </div>
+        <div class="feature">
+            <h3>Data-Driven Insights</h3>
+        </div>
+        <div class="feature">
+            <h3>Explainable AI</h3>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section id="contact" class="section">
+    <h2>Contact Us</h2>
+    <form class="contact-form">
+        <input type="text" placeholder="Name" required>
+        <input type="email" placeholder="Email" required>
+        <textarea placeholder="Message"></textarea>
+        <button type="submit">Send Message</button>
+    </form>
+    <div class="contact-info">
+        <p>Email: contact@cropprediction.com</p>
+        <p>Phone: +123 456 7890</p>
+    </div>
+</section>
 </body>
+</html>
