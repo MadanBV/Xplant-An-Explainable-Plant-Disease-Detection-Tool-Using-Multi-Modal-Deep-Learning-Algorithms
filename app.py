@@ -23,9 +23,24 @@ def get_image_data(image):
     img_base64 = base64.b64encode(img_io.getvalue()).decode('ascii')
     return img_base64
 
-@app.route("/")
+@app.route("/", methods=['GET', "POST"])
 def index():
-    return render_template('index.html')
+
+    name = request.form.get('name')
+    email = request.form.get('email')
+    message = request.form.get('message')
+    timestamp = datetime.now()
+
+    if name and email and message:
+        try:
+            database_op.save_contact(name, email, timestamp, message)
+            success_message = "Your message has been saved. We'll get back to you soon!"
+        except Exception as e:
+            success_message = f"An error occurred: {str(e)}"
+    else:
+        success_message = "All fields are required."
+
+    return render_template('index.html', contact_message=success_message)
 
 @app.route("/user_dashboard")
 def user_dashboard():
@@ -34,6 +49,16 @@ def user_dashboard():
 @app.route("/research_dashboard")
 def research_dashboard():
     return render_template('research_dashboard.html')
+
+@app.route("/get_disease_data", methods=["GET", "POST"])
+def get_disease_data():
+    try:
+        data = database_op.disp_disease_data()
+        print("success")
+        return jsonify(data)
+    except Exception as e:
+        print("error")
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/developer_dashboard")
 def developer_dashboard():
@@ -90,7 +115,7 @@ def disease_detection():
             # Perform prediction
             Plant, Disease = AI_model.prediction(file_path)
 
-            if Disease == "Healthy":
+            if Disease == "healthy":
 
                 timestamp = datetime.now()
                 database_op.add_disease_data(Plant, Disease, file_path, None, None, timestamp)

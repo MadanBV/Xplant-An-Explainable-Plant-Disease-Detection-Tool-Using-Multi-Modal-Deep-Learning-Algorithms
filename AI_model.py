@@ -1,12 +1,12 @@
 import tensorflow as tf
 from tensorflow import keras
 import numpy as np
-from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.efficientnet_v2 import preprocess_input
+from tensorflow.keras.preprocessing import image # type: ignore
+from tensorflow.keras.applications.efficientnet_v2 import preprocess_input # type: ignore
 from lime import lime_image
 from skimage.segmentation import mark_boundaries
 import matplotlib.pyplot as plt
-from tensorflow.keras.preprocessing.image import load_img, img_to_array
+from tensorflow.keras.preprocessing.image import load_img, img_to_array # type: ignore
 from scipy.ndimage import zoom
 from PIL import Image
 import cv2
@@ -21,7 +21,7 @@ class_df = pd.read_csv(csv_file_path)
 Crop_list = [f"{row['Crop']}" for _, row in class_df.iterrows()]
 Disease_list = [f"{row['Disease']}" for _, row in class_df.iterrows()]
 
-model_path = r'Trained models\efficientnetv2_10.keras'
+model_path = r'Trained models\efficientnetv2_25.keras'
 model = tf.keras.models.load_model(model_path)
 
 def load_and_preprocess_image(img_path):

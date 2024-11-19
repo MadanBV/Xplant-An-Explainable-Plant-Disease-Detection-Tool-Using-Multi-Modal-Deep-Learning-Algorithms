@@ -55,11 +55,17 @@
 <!-- Contact Section -->
 <section id="contact" class="section">
     <h2>Contact Us</h2>
-    <form class="contact-form">
-        <input type="text" placeholder="Name" required>
-        <input type="email" placeholder="Email" required>
-        <textarea placeholder="Message"></textarea>
-        <button type="submit">Send Message</button>
+    <form method="post">
+        <div class="contact-form">
+            <input type="text" name="name" placeholder="Name" required>
+        </div>
+        <div class="contact-form">
+            <input type="email" name="email" placeholder="Email" class="form-control" required>
+        </div>
+        <div class="contact-form">
+            <textarea name="message" placeholder="Message" class="form-control" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Send Message</button>
     </form>
     <div class="contact-info">
         <p>Email: contact@cropprediction.com</p>
