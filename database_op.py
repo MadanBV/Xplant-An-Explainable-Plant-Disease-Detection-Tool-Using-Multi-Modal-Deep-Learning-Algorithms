@@ -1,35 +1,123 @@
 from pymongo import MongoClient
 from datetime import datetime
-import os
+from bson import ObjectId
 
+# MongoDB Client and Database Initialization
 client = MongoClient('mongodb://localhost:27017/')
 db = client['Plant_disease']
 Disease_data = db['Diseases']
 User_message_data = db['User_message']
+Researcher_message = db['Research_message']
 
 def add_disease_data(plant, disease, file_path, gradcam_path, lime_path, timestamp):
     """Save prediction data to MongoDB"""
-    prediction_data = {
-        "plant": plant,
-        "disease": disease,
-        "Image uploaded": file_path,
-        "gradcam image": gradcam_path,
-        "lime image": lime_path,
-        "timestamp": timestamp
-    }
-    Disease_data.insert_one(prediction_data)
+    try:
+        prediction_data = {
+            "plant": plant,
+            "disease": disease,
+            "Image uploaded": file_path,
+            "gradcam image": gradcam_path,
+            "lime image": lime_path,
+            "timestamp": timestamp,
+            "comments": []  # Initialize empty comments list
+        }
+        result = Disease_data.insert_one(prediction_data)
+        return str(result.inserted_id)
+    except Exception as e:
+        print(f"Error inserting disease data: {e}")
+        return None
 
 def disp_disease_data():
-    Disp_data = Disease_data.find({}, {"_id": 0, "plant": 1, "disease": 1, "file_path": 1, "gradcam_path": 1, "lime_path": 1})
-    #total_count = Disease_data.count_documents()
-    disp_data = list(Disp_data)
-    return(disp_data)
+    """Retrieve all disease data from MongoDB"""
+    try:
+        Disp_data = list(Disease_data.find({}, {
+            "_id": 1,
+            "plant": 1,
+            "disease": 1,
+            "Image uploaded": 1,
+            "gradcam image": 1,
+            "lime image": 1
+        }))
+        
+        return Disp_data
+    except Exception as e:
+        print(f"Error retrieving disease data: {e}")
+        return []
 
 def save_contact(name, email, message, timestamp):
-    message_data = {
-        "name": name,
-        "email": email,
-        "message": message,
-        "timestamp": timestamp
-    }
-    User_message_data.insert_one(message_data)
+    """Save user contact/message data to MongoDB"""
+    try:
+        message_data = {
+            "name": name,
+            "email": email,
+            "message": message,
+            "timestamp": timestamp
+        }
+        result = User_message_data.insert_one(message_data)
+        return str(result.inserted_id)
+    except Exception as e:
+        print(f"Error saving contact: {e}")
+        return None
+
+def disp_user_message():
+    """Retrieve all user messages from MongoDB"""
+    try:
+        disp_msg = list(User_message_data.find({}, {
+            "_id": 1,
+            "name": 1,
+            "email": 1,
+            "message": 1,
+            "timestamp": 1
+        }))
+        for msg in disp_msg:
+            msg['_id'] = str(msg['_id'])  # Convert ObjectId to string
+        return disp_msg
+    except Exception as e:
+        print(f"Error retrieving user messages: {e}")
+        return []
+
+def researcher_message(message, timestamp):
+    """Save researcher message to MongoDB"""
+    try:
+        message_data = {
+            "message": message,
+            "timestamp": timestamp
+        }
+        result = Researcher_message.insert_one(message_data)
+        return str(result.inserted_id)
+    except Exception as e:
+        print(f"Error saving researcher message: {e}")
+        return None
+    
+def disp_research_message():
+    """Retrieve all user messages from MongoDB"""
+    try:
+        disp_msg = list(User_message_data.find({}, {
+            "_id": 1,
+            "message": 1,
+            "timestamp": 1
+        }))
+        for msg in disp_msg:
+            msg['_id'] = str(msg['_id'])  # Convert ObjectId to string
+        return disp_msg
+    except Exception as e:
+        print(f"Error retrieving user messages: {e}")
+        return []
+
+def add_comments(record_id, user_comment, developer_comment):
+    """Add user and developer comments to a specific disease record"""
+    try:
+        result = Disease_data.update_one(
+            {"_id": ObjectId(record_id)},
+            {"$push": {"comments": {
+                "user_comment": user_comment,
+                "developer_comment": developer_comment,
+                "timestamp": datetime.now()
+            }}}
+        )
+        if result.modified_count > 0:
+            return True
+        return False
+    except Exception as e:
+        print(f"Error adding comments: {e}")
+        return False

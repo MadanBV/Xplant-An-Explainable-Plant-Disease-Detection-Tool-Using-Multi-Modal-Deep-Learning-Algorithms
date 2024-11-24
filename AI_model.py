@@ -21,8 +21,12 @@ class_df = pd.read_csv(csv_file_path)
 Crop_list = [f"{row['Crop']}" for _, row in class_df.iterrows()]
 Disease_list = [f"{row['Disease']}" for _, row in class_df.iterrows()]
 
-model_path = r'Trained models\efficientnetv2_25.keras'
-model = tf.keras.models.load_model(model_path)
+#Load trained models
+eff_model_path = 'Trained models\efficientnetv2S_10.keras'
+eff_model = tf.keras.models.load_model(eff_model_path)
+
+res_model_path = r'Trained models\final_resnet-10.keras'
+res_model = tf.keras.models.load_model(res_model_path)
 
 def load_and_preprocess_image(img_path):
     img = image.load_img(img_path, target_size=IMG_SIZE)
@@ -35,12 +39,22 @@ def load_and_preprocess_image(img_path):
 def prediction(img_path):
     img = load_and_preprocess_image(img_path)
 
-    preds = model.predict(img)
-    pred_class = np.argmax(preds, axis=-1)[0] 
+    eff_preds = eff_model.predict(img)
+    eff_pred_class = np.argmax(eff_preds, axis=-1)[0]
+    eff_max_value = np.max(eff_preds, axis=-1)[0]  
 
-    Plant = Crop_list[pred_class]
-    Disease = Disease_list[pred_class]
-    return Plant, Disease
+    res_preds = res_model.predict(img)
+    res_pred_class = np.argmax(res_preds, axis=-1)[0]
+    res_max_value = np.max(res_preds, axis=-1)[0]
+
+    if eff_max_value > res_max_value:
+        Plant = Crop_list[eff_pred_class]
+        Disease = Disease_list[eff_pred_class]
+        return Plant, Disease
+    else:
+        Plant = Crop_list[eff_pred_class]
+        Disease = Disease_list[eff_pred_class]
+        return Plant, Disease
 
 #Plant detection
 def plant_predict(img_path):
@@ -49,7 +63,7 @@ def plant_predict(img_path):
     plant_df = pd.read_csv(csv_file_path)
     Plants = [f"{row['Plants']}" for _, row in plant_df.iterrows()]
 
-    Plant_model_path = r'Trained models\Plant_detect.keras'
+    Plant_model_path = r'Trained models\Plant_detect_cpu.keras'
     plant_model = tf.keras.models.load_model(Plant_model_path)
 
     img = load_and_preprocess_image(img_path)
@@ -86,7 +100,7 @@ def explain_with_lime(img_path):
     
     explanation = explainer.explain_instance(
         img_array.astype('double'),
-        model.predict,
+        eff_model.predict,
         top_labels=3,
         hide_color=None, 
         num_samples=1000
@@ -127,7 +141,7 @@ def plot_gradcam(img_path, last_conv_layer_name="top_conv"):
     img = tf.keras.preprocessing.image.load_img(img_path, target_size=IMG_SIZE)
     img_array = load_and_preprocess_image(img_path)
     
-    heatmap = get_gradcam_heatmap(model, img_array, last_conv_layer_name)
+    heatmap = get_gradcam_heatmap(eff_model, img_array, last_conv_layer_name)
     heatmap = cv2.resize(heatmap, (img.size[0], img.size[1]))
     heatmap = np.uint8(255 * heatmap)
     heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)

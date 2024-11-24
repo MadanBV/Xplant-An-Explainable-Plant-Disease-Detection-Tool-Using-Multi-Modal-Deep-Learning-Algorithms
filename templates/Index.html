@@ -5,29 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Intelligent Agriculture Suggestion System</title>
     <link rel="stylesheet" href="./static/styles.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-
-<!-- Navigation Menu -->
 <header>
-    <nav>
-        <ul class="nav-links">
-            <li><a href="#home">Home</a></li>
-            <li class="dropdown">
-                <a href="#dashboards">Dashboards</a>
-                <div class="dropdown-content">
-                    <a href="{{ url_for('user_dashboard') }}">User Dashboard</a>
-                    <a href="{{ url_for('research_dashboard') }}">Researchers Dashboard</a>
-                    <a href="{{ url_for('developer_dashboard') }}">Developer Dashboard</a>
-                </div>
-            </li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#contact">Contact</a></li>
-        </ul>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">Agriculture AI</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link" href="#dashboards">Dashboards</a>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for('user_dashboard') }}">User Dashboard</a>
+                        <a href="{{ url_for('research_dashboard') }}">Researchers Dashboard</a>
+                        <a href="{{ url_for('developer_dashboard') }}">Developer Dashboard</a>
+                    </div>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+            </ul>
+        </div>
     </nav>
 </header>
 
-<!-- Home Section -->
 <section id="home">
     <div class="hero">
         <h1>INTELLIGENT AGRICULTURE SUGGESTION SYSTEM</h1>
@@ -35,24 +39,22 @@
     </div>
 </section>
 
-<!-- About Section -->
 <section id="about" class="section">
     <h2>About the System</h2>
     <p>Our AI-powered system helps detect crop diseases, providing real-time, data-driven insights to farmers, researchers, and developers.</p>
-    <div class="features">
-        <div class="feature">
+    <div class="features row">
+        <div class="col-md-4 feature">
             <h3>Real-time Detection</h3>
         </div>
-        <div class="feature">
+        <div class="col-md-4 feature">
             <h3>Data-Driven Insights</h3>
         </div>
-        <div class="feature">
+        <div class="col-md-4 feature">
             <h3>Explainable AI</h3>
         </div>
     </div>
 </section>
 
-<!-- Contact Section -->
 <section id="contact" class="section">
     <h2>Contact Us</h2>
     <form method="post">
@@ -73,5 +75,8 @@
     </div>
 </section>
 
+<footer>
+    <p>&copy; 2024 Intelligent Agriculture Suggestion System</p>
+</footer>
 </body>
 </html>

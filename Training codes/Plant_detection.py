@@ -43,7 +43,7 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE),
               metrics=['accuracy'])
 
 
-checkpoint = ModelCheckpoint('Plant.keras', monitor='accuracy', verbose=1, save_best_only=True, mode='max')
+checkpoint = ModelCheckpoint('Plant_CPU.keras', monitor='accuracy', verbose=1, save_best_only=True, mode='max')
 
 early_stopping = EarlyStopping(monitor='loss', patience=10, restore_best_weights=True)
 
@@ -68,6 +68,6 @@ fine_tune_history = model.fit(
     verbose=1
 )
 
-model.save('Plant_detect.keras')
+model.save('Plant_detect_cpu.keras')
 
 print("Model training and saving completed.")

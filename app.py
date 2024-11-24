@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
 import os
 import AI_model
@@ -8,61 +8,210 @@ import base64
 import uuid
 import database_op
 from datetime import datetime
+from bson import ObjectId
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
+
+# Configuration for file uploads
 app.config['Image_Uploaded'] = 'Image_Uploaded'
 app.config['Gradcam_Uploaded'] = 'Gradcam_Result'
 app.config['LIME_Uploaded'] = 'LIME_Result'
 app.config['Plant_Uploaded'] = 'Plant_Result'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+
+# Ensure directories exist
+for folder in ['Image_Uploaded', 'Gradcam_Result', 'LIME_Result', 'Plant_Result']:
+    os.makedirs(folder, exist_ok=True)
+
+def allowed_file(filename):
+    
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def get_image_data(image):
+    
     img_io = io.BytesIO()
     image.save(img_io, format='png')
     img_io.seek(0)
-    img_base64 = base64.b64encode(img_io.getvalue()).decode('ascii')
-    return img_base64
+    return base64.b64encode(img_io.getvalue()).decode('ascii')
 
 @app.route("/", methods=['GET', "POST"])
 def index():
-
+    
     name = request.form.get('name')
     email = request.form.get('email')
     message = request.form.get('message')
     timestamp = datetime.now()
 
+    success_message = None
     if name and email and message:
         try:
-            database_op.save_contact(name, email, timestamp, message)
+            database_op.save_contact(name, email, message, timestamp)
             success_message = "Your message has been saved. We'll get back to you soon!"
         except Exception as e:
             success_message = f"An error occurred: {str(e)}"
-    else:
+    elif request.method == "POST":
         success_message = "All fields are required."
 
     return render_template('index.html', contact_message=success_message)
 
-@app.route("/user_dashboard")
+@app.route("/user_dashboard", methods=['GET', "POST"])
 def user_dashboard():
-    return render_template('user_dashboard.html')
+    
+    name = request.form.get('name')
+    email = request.form.get('email')
+    message = request.form.get('message')
+    timestamp = datetime.now()
 
-@app.route("/research_dashboard")
+    success_message = None
+    if name and email and message:
+        try:
+            database_op.save_contact(name, email, message, timestamp)
+            success_message = "Your message has been saved. We'll get back to you soon!"
+        except Exception as e:
+            success_message = f"An error occurred: {str(e)}"
+    elif request.method == "POST":
+        success_message = "All fields are required."
+
+    return render_template('user_dashboard.html', contact_message=success_message)
+
+@app.route("/get_history_record/<int:index>")
+def get_history_record(index):
+    
+    disease_data = database_op.disp_disease_data()
+    if index < 0 or index >= len(disease_data):
+        return jsonify({"error": "Index out of range"}), 400
+    record = disease_data[index]
+    
+    return jsonify(record)
+
+@app.route("/research_dashboard", methods=["GET", "POST"])
 def research_dashboard():
-    return render_template('research_dashboard.html')
+    
+    disease_data = database_op.disp_disease_data()
+    total_count = len(disease_data)
+    healthy_count = sum(1 for record in disease_data if record['disease'] == "healthy")
+    disease_count = total_count - healthy_count
+    return render_template(
+        'research_dashboard.html',
+        disease_data=disease_data,
+        total_count=total_count,
+        healthy_count=healthy_count,
+        disease_count=disease_count
+    )
 
-@app.route("/get_disease_data", methods=["GET", "POST"])
-def get_disease_data():
+@app.route("/save_message", methods=["POST"])
+def save_message():
+    
+    message = request.form.get("message")
+    timestamp = datetime.now()
+
+    if message:
+        try:
+            database_op.researcher_message(message, timestamp)
+            flash("Message successfully sent to the developer!")
+        except Exception as e:
+            flash(f"Error saving message: {str(e)}")
+    else:
+        flash("Message cannot be empty!")
+
+    return redirect(url_for("research_dashboard"))
+
+@app.route("/upload_comment", methods=["POST"])
+def upload_comment():
+    
+    record_id = request.form.get("record_id")
+    user_comment = request.form.get("user_comment")
+    developer_comment = request.form.get("developer_comment")
+
+    if record_id and (user_comment or developer_comment):
+        try:
+            database_op.add_comments(record_id, user_comment, developer_comment)
+            return jsonify({"success": True, "message": "Comment successfully saved!"}), 200
+        except Exception as e:
+            return jsonify({"success": False, "message": f"Error saving comments: {str(e)}"}), 500
+    return jsonify({"success": False, "message": "Record ID and at least one comment are required!"}), 400
+
+@app.route("/get_record/<int:index>")
+def get_record(index):
+    disease_data = database_op.disp_disease_data()
+    if index < 0 or index >= len(disease_data):
+        return jsonify({"error": "Index out of range"}), 400
+    record = disease_data[index]
+    
+    return jsonify(record)
+
+@app.route("/get_user_message")
+def get_user_message():
+    
     try:
-        data = database_op.disp_disease_data()
-        print("success")
-        return jsonify(data)
+        user_messages = database_op.disp_user_message()
+        return jsonify(user_messages)
     except Exception as e:
-        print("error")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Failed to fetch messages: {str(e)}"}), 500
 
-@app.route("/developer_dashboard")
-def developer_dashboard():
-    return render_template('developer_dashboard.html')
+@app.route("/uploads/<folder>/<filename>")
+def uploaded_file(folder, filename):
+    
+    if folder in app.config:
+        directory = app.config[folder]
+        return send_from_directory(directory, filename)
+    return jsonify({"error": "Invalid folder"}), 400
+
+@app.route("/get_Research_message")
+def get_Research_message():
+    research_message = database_op.disp_research_message()
+    return jsonify(research_message)
+
+@app.route("/disease_detection", methods=["POST"])
+def disease_detection():
+
+    if "file" not in request.files:
+        flash("No file part")
+        return redirect(request.url)
+
+    file = request.files["file"]
+    if file.filename == "" or not allowed_file(file.filename):
+        flash("No selected file or invalid file type")
+        return redirect(request.url)
+
+    filename = secure_filename(file.filename)
+    file_path = os.path.join(app.config['Image_Uploaded'], filename)
+    file.save(file_path)
+
+    # Perform AI model prediction
+    Plant, Disease = AI_model.prediction(file_path)
+
+    if Disease == "healthy":
+        database_op.add_disease_data(Plant, Disease, file_path, None, None, datetime.now())
+        return jsonify({
+            'Plant': Plant,
+            'Message': "Plant doesn't have any disease",
+            'user_image': url_for('uploaded_file', folder='Image_Uploaded', filename=filename, _external=True)
+        })
+
+    # Grad-CAM and LIME explanation generation
+    gradcam_img = AI_model.plot_gradcam(file_path)
+    gradcam_filename = f"gradcam_{uuid.uuid4().hex}.png"
+    gradcam_path = os.path.join(app.config['Gradcam_Uploaded'], gradcam_filename)
+    gradcam_img.save(gradcam_path)
+    gradcam_img_base64 = get_image_data(gradcam_img)
+
+    lime_img = AI_model.explain_with_lime(file_path)
+    lime_filename = f"lime_{uuid.uuid4().hex}.png"
+    lime_path = os.path.join(app.config['LIME_Uploaded'], lime_filename)
+    lime_img.save(lime_path)
+    lime_img_base64 = get_image_data(lime_img)
+
+    database_op.add_disease_data(Plant, Disease, file_path, gradcam_path, lime_path, datetime.now())
+
+    return jsonify({
+        'Plant': Plant,
+        'Disease': Disease,
+        'Message': "Highlighted parts show the disease",
+        'gradcam_img': gradcam_img_base64,
+        'lime_img': lime_img_base64
+    })
 
 @app.route("/plant_detection", methods=["POST"])
 def plant_detection():
@@ -91,65 +240,10 @@ def plant_detection():
                 'Plant': Plant,
             })        
 
-    #return render_template('plant_detection.html')
 
-
-@app.route("/disease_detection", methods=["POST"])
-def disease_detection():
-
-    if request.method == "POST":
-        if "file" not in request.files:
-            flash("No file part")
-            return redirect(request.url)
-
-        file = request.files["file"]
-        if file.filename == "":
-            flash("No selected file")
-            return redirect(request.url)
-
-        if file:
-            filename = secure_filename(file.filename)
-            file_path = os.path.join(app.config['Image_Uploaded'], filename)
-            file.save(file_path)
-
-            # Perform prediction
-            Plant, Disease = AI_model.prediction(file_path)
-
-            if Disease == "healthy":
-
-                timestamp = datetime.now()
-                database_op.add_disease_data(Plant, Disease, file_path, None, None, timestamp)
-
-                return jsonify({
-                    'Plant': Plant,
-                    'Message': "Plant don't have any disease"
-                })
-            
-            else:
-                # Generate Grad-CAM
-                gradcam_img = AI_model.plot_gradcam(file_path)
-                gradcam_img_path = os.path.join(app.config['Gradcam_Uploaded'], f"gradcam_{uuid.uuid4().hex}.png")
-                gradcam_img.save(gradcam_img_path)
-                gradcam_img_base64 = get_image_data(gradcam_img)
-
-                # Generate LIME explanation
-                lime_img = AI_model.explain_with_lime(file_path)
-                lime_img_path = os.path.join(app.config['LIME_Uploaded'], f"lime_{uuid.uuid4().hex}.png")
-                lime_img.save(lime_img_path)
-                lime_img_base64 = get_image_data(lime_img)
-
-                timestamp = datetime.now()
-                database_op.add_disease_data(Plant, Disease, file_path, gradcam_img_path, lime_img_path, timestamp)
-
-                # Return results as JSON to display in popup
-                return jsonify({
-                    'Plant': Plant,
-                    'Disease': Disease,
-                    'Mwssage': "Highlighted part below show disease",
-                    'gradcam_img': gradcam_img_base64,
-                    'lime_img': lime_img_base64
-                })
-    #return render_template('disease_detection.html')
+@app.route("/developer_dashboard")
+def developer_dashboard():
+    return render_template('developer_dashboard.html')
 
 if __name__ == "__main__":
     app.run(debug=True)

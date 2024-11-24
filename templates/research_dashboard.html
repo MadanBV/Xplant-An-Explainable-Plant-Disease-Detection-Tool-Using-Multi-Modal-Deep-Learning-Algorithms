@@ -3,54 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Intelligent Agriculture Suggestion System</title>
+    <title>Research Dashboard</title>
     <link rel="stylesheet" href="./static/styles.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-<header>
-    <nav>
-        <ul class="nav-links">
-            <li><a href="#home">Home</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#contact">Contact</a></li>
-            <li><a href="{{ url_for('index') }}">Logout</a></li>
-        </ul>
-    </nav>
+<header class="bg-primary text-white py-3">
+    <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <a class="navbar-brand" href="#home">Intelligent Agriculture</a>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Logout</a></li>
+            </ul>
+        </nav>
+    </div>
 </header>
 
-<section id="home">
-    <div class="hero">
-        <h1>INTELLIGENT AGRICULTURE SUGGESTION SYSTEM</h1>
-        <p>Empower Farming with Precision and Transparency</p>
-        <button class="btn btn-info" onclick="fetchDiseaseData()">View Disease Data</button>
-        <button class="btn btn-secondary" data-toggle="modal" data-target="#diseaseModal">Disease Detection</button>
+<section id="home" class="py-5 text-center bg-light">
+    <div class="container">
+        <h1 class="display-4">Research Dashboard</h1>
+        <p class="lead">View and navigate disease detection data with ease and precision.</p>
     </div>
 </section>
 
-<!-- About Section -->
-<section id="about" class="section">
-    <h2>About the System</h2>
-    <p>Our AI-powered system helps detect crop diseases, providing real-time, data-driven insights to farmers, researchers, and developers.</p>
-    <div class="features">
-        <div class="feature">
-            <h3>Real-time Detection</h3>
-        </div>
-        <div class="feature">
-            <h3>Data-Driven Insights</h3>
-        </div>
-        <div class="feature">
-            <h3>Explainable AI</h3>
+<!-- Summary Table -->
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <table class="table table-bordered text-center">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Total Records</th>
+                        <th>Healthy Records</th>
+                        <th>Diseased Records</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ total_count }}</td>
+                        <td>{{ healthy_count }}</td>
+                        <td>{{ disease_count }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="text-center mt-4">
+                <button class="btn btn-primary" onclick="openRecordModal(0)">View Records</button>
+            </div>
         </div>
     </div>
-</section>
+</div>
 
-<!-- Contact Section -->
 <section id="contact" class="section">
     <h2>Send message to Developer</h2>
-    <form class="contact-form">
-        <textarea placeholder="Message"></textarea>
-        <button type="submit">Send Message</button>
+    <form class="contact-form" action="/save_message" method="POST">
+        <textarea name="message" placeholder="Message"></textarea>
+        <button type="submit" class="btn btn-primary">Send Message</button>
     </form>
     <div class="contact-info">
         <p>Email: contact@cropprediction.com</p>
@@ -58,30 +68,40 @@
     </div>
 </section>
 
-<!-- Disease Data Modal -->
-<div class="modal fade" id="diseaseDataModal" tabindex="-1" role="dialog" aria-labelledby="diseaseDataModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+<!-- Record Navigation Modal -->
+<div class="modal fade" id="recordModal" tabindex="-1" role="dialog" aria-labelledby="recordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="diseaseDataModalLabel">Disease Data</h5>
+                <h5 class="modal-title" id="recordModalLabel">Disease Data Record</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
             </div>
-            <div class="modal-body">
-                <table class="table table-bordered" id="diseaseDataTable">
-                    <thead>
-                        <tr>
-                            <th> S No</th>
-                            <th>Plant Affected</th>
-                            <th>Disease Name</th>
-                            <th>User Image</th>
-                            <th>Grad Cam Image</th>
-                            <th>LIME Image</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Data will be dynamically populated here -->
-                    </tbody>
-                </table>
+            <div class="modal-body text-center">
+                <h4 id="plantName"></h4>
+                <h4 id="diseaseName"></h4>
+                <div class="my-3">
+                    <p><strong>User Image:</strong></p>
+                    <img id="userImage" alt="User Image" class="img-thumbnail mb-4">
+                </div>
+                <div class="my-3">
+                    <p><strong>Grad-CAM Image:</strong></p>
+                    <img id="gradcamImage" alt="Grad-CAM Image" class="img-thumbnail mb-4">
+                </div>
+                <div class="my-3">
+                    <p><strong>LIME Explanation:</strong></p>
+                    <img id="limeImage" alt="LIME Explanation Image" class="img-thumbnail mb-4">
+                </div>
+            </div>
+            <h4 style="text-align:center;">Post Your Comment</h4>
+            <form id="commentForm" class="contact-form" method="POST">
+                <input type="hidden" id="recordId" name="record_id"> <!-- Hidden input -->
+                <textarea name="user_comment" placeholder="Comment to User"></textarea>
+                <textarea name="developer_comment" placeholder="Comment to Developer"></textarea>
+                <button type="button" class="btn btn-primary" onclick="submitComment()">Submit</button>
+            </form>
+            <div class="modal-footer justify-content-between">
+                <button class="btn btn-secondary" onclick="previousRecord()">Previous</button>
+                <button class="btn btn-secondary" onclick="nextRecord()">Next</button>
             </div>
         </div>
     </div>
@@ -91,29 +111,64 @@
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
-    function fetchDiseaseData() {
+    let currentIndex = 0;
+
+    function openRecordModal(index) {
+        currentIndex = index;
+        fetchRecord(index);
+        $("#recordModal").modal("show");
+    }
+
+    function fetchRecord(index) {
         $.ajax({
-            url: "/get_disease_data",
+            url: `/get_record/${index}`,
             method: "GET",
-            success: function(data) {
-                let tableBody = $("#diseaseDataTable tbody");
-                tableBody.empty(); // Clear previous data
-                data.forEach((item, index) => {
-                    tableBody.append(`
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td>${item.plant}</td>
-                            <td>${item.disease}</td>
-                            <td><img src="${item.file_path}" alt="File Image" style="width:100px;height:auto;"></td>
-                            <td><img src="${item.gradcam_path}" alt="Grad-CAM Image" style="width:100px;height:auto;"></td>
-                            <td><img src="${item.lime_path}" alt="LIME Explanation Image" style="width:100px;height:auto;"></td>
-                        </tr>
-                    `);
-                });
-                $("#diseaseDataModal").modal("show");
+            success: function (data) {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                
+                $("#recordId").val(data._id); 
+                $("#plantName").text(`Plant: ${data.plant}`);
+                $("#diseaseName").text(`Disease: ${data.disease}`);
+                $("#userImage").attr("src", data.file_path || "");
+                $("#gradcamImage").attr("src", data.gradcam_path || "");
+                $("#limeImage").attr("src", data.lime_path || "");
             },
-            error: function() {
-                alert("Failed to fetch data. Please try again.");
+            error: function () {
+                alert("Error fetching record.");
+            }
+        });
+    }
+
+
+    function previousRecord() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            fetchRecord(currentIndex);
+        } else {
+            alert("No previous record.");
+        }
+    }
+
+    function nextRecord() {
+        currentIndex++;
+        fetchRecord(currentIndex);
+    }
+
+    function submitComment() {
+        const formData = $("#commentForm").serialize(); // Serialize form data
+        $.ajax({
+            url: "/upload_comment",
+            type: "POST",
+            data: formData,
+            success: function (response) {
+                alert("Comment saved!");
+                $("#commentForm")[0].reset(); // Reset the form
+            },
+            error: function (xhr) {
+                alert("Failed to save comment. " + xhr.responseJSON.message);
             }
         });
     }
