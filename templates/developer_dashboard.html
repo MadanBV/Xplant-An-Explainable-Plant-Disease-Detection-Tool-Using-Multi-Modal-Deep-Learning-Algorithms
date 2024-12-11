@@ -123,18 +123,18 @@
                 <div class="modal-body text-center">
                     <h4>Plant: <span id="plantName"></span></h4>
                     <h4>Disease: <span id="diseaseName"></span></h4>
-                    <h5>User Image:</h5>
-                    <img id="userImage" src="" alt="User Image" class="img-fluid">
                     <h5>Grad-CAM Image:</h5>
+                    <img id="userImage" src="" alt="User Image" class="img-fluid">
                     <img id="gradcamImage" src="" alt="Grad-CAM Image" class="img-fluid">
                     <h5>LIME Explanation:</h5>
+                    <img id="userImage1" src="" alt="User Image" class="img-fluid">
                     <img id="limeImage" src="" alt="LIME Explanation Image" class="img-fluid">
                     <h5>Comment from Researchers</h5>
                     <textarea class="form-control" id="researcherComment" rows="3" readonly></textarea>
                 </div>
                 <div class="modal-footer justify-content-between">
-                    <button type="button" class="btn btn-secondary" id="prevRecord">Previous</button>
-                    <button type="button" class="btn btn-secondary" id="nextRecord">Next</button>
+                    <button class="btn btn-secondary" onclick="previousRecord()">Previous</button>
+                    <button class="btn btn-secondary" onclick="nextRecord()">Next</button>
                 </div>
             </div>
         </div>
@@ -165,12 +165,13 @@
                 }
         
                 $("#recordId").val(data._id); 
-                $("#plantName").text(`Plant: ${data.plant}`);
-                $("#diseaseName").text(`Disease: ${data.disease}`);
-                $("#userImage").attr("src", data.file_path || "");
-                $("#gradcamImage").attr("src", data.gradcam_path || "");
-                $("#limeImage").attr("src", data.lime_path || "");
-                $("#researcherComment").val(data.comment || "No comments available.");
+                $("#plantName").text(`Plant: ${data.Plant}`);
+                $("#diseaseName").text(`Disease: ${data.Disease}`);
+                $("#userImage").attr("src", "data:image/png;base64," + data.Image_uploaded);
+                $("#gradcamImage").attr("src", "data:image/png;base64," + data.gradcam_image);
+                $("#userImage1").attr("src", "data:image/png;base64," + data.Image_uploaded);
+                $("#limeImage").attr("src", "data:image/png;base64," + data.lime_image);
+                $("#researcherComment").val(data.developer_comment || "No comments available.");
                 $("#diseaseRecordModal").modal("show");
             },
             error: function () {

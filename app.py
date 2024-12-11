@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
+from tensorflow.keras.preprocessing import image # type: ignore
 import os
 import AI_model
 from PIL import Image
@@ -19,6 +20,7 @@ app.config['Gradcam_Uploaded'] = 'Gradcam_Result'
 app.config['LIME_Uploaded'] = 'LIME_Result'
 app.config['Plant_Uploaded'] = 'Plant_Result'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+IMG_SIZE = (224, 224) 
 
 # Ensure directories exist
 for folder in ['Image_Uploaded', 'Gradcam_Result', 'LIME_Result', 'Plant_Result']:
@@ -82,8 +84,24 @@ def get_history_record(index):
     if index < 0 or index >= len(disease_data):
         return jsonify({"error": "Index out of range"}), 400
     record = disease_data[index]
+
+    user_img = image.load_img(record["Image uploaded"], target_size=IMG_SIZE)
+    user_img = get_image_data(user_img)
+
+    gradcam_img = image.load_img(record["gradcam image"], target_size=IMG_SIZE)
+    gradcam_img = get_image_data(gradcam_img)
+
+    lime_img = image.load_img(record["lime image"], target_size=IMG_SIZE)
+    lime_img = get_image_data(lime_img)
     
-    return jsonify(record)
+    return jsonify({
+        'Plant': record["plant"],
+        'Disease': record["disease"],
+        'Message': "Highlighted parts show the disease",
+        'Image_uploaded': user_img,
+        'gradcam_image': gradcam_img,
+        'lime_image': lime_img
+    })
 
 @app.route("/research_dashboard", methods=["GET", "POST"])
 def research_dashboard():
@@ -138,8 +156,24 @@ def get_record(index):
     if index < 0 or index >= len(disease_data):
         return jsonify({"error": "Index out of range"}), 400
     record = disease_data[index]
+    user_img = image.load_img(record["Image uploaded"], target_size=IMG_SIZE)
+    user_img = get_image_data(user_img)
+
+    gradcam_img = image.load_img(record["gradcam image"], target_size=IMG_SIZE)
+    gradcam_img = get_image_data(gradcam_img)
+
+    lime_img = image.load_img(record["lime image"], target_size=IMG_SIZE)
+    lime_img = get_image_data(lime_img)
     
-    return jsonify(record)
+    return jsonify({
+        '_id': record["_id"],
+        'Plant': record["plant"],
+        'Disease': record["disease"],
+        'Message': "Highlighted parts show the disease",
+        'Image_uploaded': user_img,
+        'gradcam_image': gradcam_img,
+        'lime_image': lime_img
+    })
 
 @app.route("/get_user_message")
 def get_user_message():
@@ -234,6 +268,8 @@ def plant_detection():
 
             # Use the model to predict the plant type or health status
             Plant = AI_model.plant_predict(file_path)
+
+            database_op.add_plant_data(Plant, file_path, datetime.now())
 
             # Return a JSON response
             return jsonify({

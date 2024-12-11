@@ -6,6 +6,7 @@ from bson import ObjectId
 client = MongoClient('mongodb://localhost:27017/')
 db = client['Plant_disease']
 Disease_data = db['Diseases']
+Plant_data = db['Plants']
 User_message_data = db['User_message']
 Researcher_message = db['Research_message']
 
@@ -19,7 +20,8 @@ def add_disease_data(plant, disease, file_path, gradcam_path, lime_path, timesta
             "gradcam image": gradcam_path,
             "lime image": lime_path,
             "timestamp": timestamp,
-            "comments": []  # Initialize empty comments list
+            "user_comment": "",
+            "developer_comment": ""
         }
         result = Disease_data.insert_one(prediction_data)
         return str(result.inserted_id)
@@ -38,11 +40,29 @@ def disp_disease_data():
             "gradcam image": 1,
             "lime image": 1
         }))
+
+        for data in Disp_data:
+            data['_id'] = str(data['_id'])
         
         return Disp_data
     except Exception as e:
         print(f"Error retrieving disease data: {e}")
         return []
+    
+def add_plant_data(plant, file_path, timestamp):
+    """Save prediction data to MongoDB"""
+    try:
+        prediction_data = {
+            "plant": plant,
+            "Image uploaded": file_path,
+            "timestamp": timestamp,
+            "comments": []  # Initialize empty comments list
+        }
+        result = Plant_data.insert_one(prediction_data)
+        return str(result.inserted_id)
+    except Exception as e:
+        print(f"Error inserting disease data: {e}")
+        return None
 
 def save_contact(name, email, message, timestamp):
     """Save user contact/message data to MongoDB"""
@@ -109,11 +129,10 @@ def add_comments(record_id, user_comment, developer_comment):
     try:
         result = Disease_data.update_one(
             {"_id": ObjectId(record_id)},
-            {"$push": {"comments": {
+            {"$set": {
                 "user_comment": user_comment,
                 "developer_comment": developer_comment,
-                "timestamp": datetime.now()
-            }}}
+            }}
         )
         if result.modified_count > 0:
             return True

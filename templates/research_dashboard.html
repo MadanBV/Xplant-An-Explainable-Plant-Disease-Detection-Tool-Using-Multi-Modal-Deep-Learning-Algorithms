@@ -80,15 +80,13 @@
                 <h4 id="plantName"></h4>
                 <h4 id="diseaseName"></h4>
                 <div class="my-3">
-                    <p><strong>User Image:</strong></p>
-                    <img id="userImage" alt="User Image" class="img-thumbnail mb-4">
-                </div>
-                <div class="my-3">
                     <p><strong>Grad-CAM Image:</strong></p>
+                    <img id="userImage" alt="User Image" class="img-thumbnail mb-4">
                     <img id="gradcamImage" alt="Grad-CAM Image" class="img-thumbnail mb-4">
                 </div>
                 <div class="my-3">
                     <p><strong>LIME Explanation:</strong></p>
+                    <img id="userImage1" alt="User Image" class="img-thumbnail mb-4">
                     <img id="limeImage" alt="LIME Explanation Image" class="img-thumbnail mb-4">
                 </div>
             </div>
@@ -130,11 +128,12 @@
                 }
                 
                 $("#recordId").val(data._id); 
-                $("#plantName").text(`Plant: ${data.plant}`);
-                $("#diseaseName").text(`Disease: ${data.disease}`);
-                $("#userImage").attr("src", data.file_path || "");
-                $("#gradcamImage").attr("src", data.gradcam_path || "");
-                $("#limeImage").attr("src", data.lime_path || "");
+                $("#plantName").text(`Plant: ${data.Plant}`);
+                $("#diseaseName").text(`Disease: ${data.Disease}`);
+                $("#userImage").attr("src", "data:image/png;base64," + data.Image_uploaded);
+                $("#gradcamImage").attr("src", "data:image/png;base64," + data.gradcam_image);
+                $("#userImage1").attr("src", "data:image/png;base64," + data.Image_uploaded);
+                $("#limeImage").attr("src", "data:image/png;base64," + data.lime_image);
             },
             error: function () {
                 alert("Error fetching record.");
