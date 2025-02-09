@@ -11,7 +11,6 @@ User_message_data = db['User_message']
 Researcher_message = db['Research_message']
 
 def add_disease_data(plant, disease, file_path, gradcam_path, lime_path, timestamp):
-    """Save prediction data to MongoDB"""
     try:
         prediction_data = {
             "plant": plant,

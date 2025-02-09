@@ -10,6 +10,7 @@ import uuid
 import database_op
 from datetime import datetime
 from bson import ObjectId
+import openai
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
@@ -199,7 +200,6 @@ def get_Research_message():
 
 @app.route("/disease_detection", methods=["POST"])
 def disease_detection():
-
     if "file" not in request.files:
         flash("No file part")
         return redirect(request.url)
@@ -224,13 +224,14 @@ def disease_detection():
             'user_image': url_for('uploaded_file', folder='Image_Uploaded', filename=filename, _external=True)
         })
 
-    # Grad-CAM and LIME explanation generation
-    gradcam_img = AI_model.plot_gradcam(file_path)
+    # Grad-CAM and Confidence Score
+    gradcam_img, confidence_score = AI_model.plot_gradcam(file_path)
     gradcam_filename = f"gradcam_{uuid.uuid4().hex}.png"
     gradcam_path = os.path.join(app.config['Gradcam_Uploaded'], gradcam_filename)
     gradcam_img.save(gradcam_path)
     gradcam_img_base64 = get_image_data(gradcam_img)
 
+    # LIME Explanation
     lime_img = AI_model.explain_with_lime(file_path)
     lime_filename = f"lime_{uuid.uuid4().hex}.png"
     lime_path = os.path.join(app.config['LIME_Uploaded'], lime_filename)
@@ -244,8 +245,10 @@ def disease_detection():
         'Disease': Disease,
         'Message': "Highlighted parts show the disease",
         'gradcam_img': gradcam_img_base64,
-        'lime_img': lime_img_base64
+        'lime_img': lime_img_base64,
+        'confidence_score': round(confidence_score * 100, 2)  # Convert to percentage
     })
+
 
 @app.route("/plant_detection", methods=["POST"])
 def plant_detection():
@@ -280,6 +283,35 @@ def plant_detection():
 @app.route("/developer_dashboard")
 def developer_dashboard():
     return render_template('developer_dashboard.html')
+
+@app.route("/chatbot", methods=["POST"])
+def chatbot():
+    data = request.get_json()
+    user_message = data.get("user_message")
+
+    if not user_message:
+        return jsonify({"reply": "Please provide a message."})
+
+    try:
+        openai.api_key = "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"
+
+        # Use gpt-3.5-turbo model
+        response = openai.ChatCompletion.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "You are a helpful AI assistant."},
+                {"role": "user", "content": user_message}
+            ],
+            max_tokens=150,
+            temperature=0.7
+        )
+        
+        # Extract the reply
+        reply = response['choices'][0]['message']['content'].strip()
+        return jsonify({"reply": reply})
+    except Exception as e:
+        return jsonify({"reply": f"Error: {str(e)}"})
+
 
 if __name__ == "__main__":
     app.run(debug=True)

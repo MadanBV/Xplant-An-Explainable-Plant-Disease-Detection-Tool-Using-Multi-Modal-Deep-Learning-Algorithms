@@ -1,8 +1,10 @@
+import uuid
 import tensorflow as tf
 from tensorflow import keras
-import numpy as np
 from tensorflow.keras.preprocessing import image # type: ignore
 from tensorflow.keras.applications.efficientnet_v2 import preprocess_input # type: ignore
+from tensorflow.keras.models import Sequential # type: ignore
+from tensorflow.keras.layers import Dense # type: ignore
 from lime import lime_image
 from skimage.segmentation import mark_boundaries
 import matplotlib.pyplot as plt
@@ -12,6 +14,8 @@ from PIL import Image
 import cv2
 import os
 import pandas as pd
+import numpy as np
+import shap
 
 
 IMG_SIZE = (224, 224)  
@@ -22,7 +26,7 @@ Crop_list = [f"{row['Crop']}" for _, row in class_df.iterrows()]
 Disease_list = [f"{row['Disease']}" for _, row in class_df.iterrows()]
 
 #Load trained models
-eff_model_path = 'Trained models\efficientnetv2S_10.keras'
+eff_model_path = r'Trained models\efficientnetv2S_10.keras'
 eff_model = tf.keras.models.load_model(eff_model_path)
 
 res_model_path = r'Trained models\final_resnet-10.keras'
@@ -63,7 +67,7 @@ def plant_predict(img_path):
     plant_df = pd.read_csv(csv_file_path)
     Plants = [f"{row['Plants']}" for _, row in plant_df.iterrows()]
 
-    Plant_model_path = r'Trained models\Plant_detect_cpu.keras'
+    Plant_model_path = r'Trained models\Plant_detect_EfficientNetV2S.keras'
     plant_model = tf.keras.models.load_model(Plant_model_path)
 
     img = load_and_preprocess_image(img_path)
@@ -145,8 +149,13 @@ def plot_gradcam(img_path, last_conv_layer_name="top_conv"):
     heatmap = cv2.resize(heatmap, (img.size[0], img.size[1]))
     heatmap = np.uint8(255 * heatmap)
     heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
-    
+
     superimposed_img = cv2.addWeighted(cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR), 0.6, heatmap, 0.4, 0)
-    return Image.fromarray(superimposed_img[..., ::-1]) 
+
+    # Get the model's confidence score
+    preds = eff_model.predict(img_array)
+    confidence_score = np.max(preds)  # Extract highest probability
+
+    return Image.fromarray(superimposed_img[..., ::-1]), confidence_score
 
 
