@@ -11,6 +11,7 @@ import database_op
 from datetime import datetime
 from bson import ObjectId
 import openai
+import numpy as np
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
@@ -238,6 +239,10 @@ def disease_detection():
     lime_img.save(lime_path)
     lime_img_base64 = get_image_data(lime_img)
 
+    shap_values = AI_model.explain_with_shap(file_path)
+    mean_shap = np.abs(shap_values).mean()
+    max_SHAP = np.abs(shap_values).max()
+
     database_op.add_disease_data(Plant, Disease, file_path, gradcam_path, lime_path, datetime.now())
 
     return jsonify({
@@ -246,7 +251,9 @@ def disease_detection():
         'Message': "Highlighted parts show the disease",
         'gradcam_img': gradcam_img_base64,
         'lime_img': lime_img_base64,
-        'confidence_score': round(confidence_score * 100, 2)  # Convert to percentage
+        'confidence_score': round(confidence_score * 100, 2),
+        'mean_shap_values': mean_shap,
+        'max_shap_value' : max_SHAP
     })
 
 

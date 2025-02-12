@@ -158,4 +158,15 @@ def plot_gradcam(img_path, last_conv_layer_name="top_conv"):
 
     return Image.fromarray(superimposed_img[..., ::-1]), confidence_score
 
+def explain_with_shap(img_path):
+    """Generate SHAP explanation for the prediction."""
+    img = tf.keras.preprocessing.image.load_img(img_path, target_size=IMG_SIZE)
+    img_array = tf.keras.preprocessing.image.img_to_array(img) / 255.0
+    image =  np.expand_dims(img_array, axis=0)
+    background_data = np.random.randn(1, 224, 224, 3)  # Random background data for SHAP
+    explainer = shap.GradientExplainer(eff_model, background_data)
+    shap_values = explainer.shap_values(image)
+    shap_values_array = np.array(shap_values)
+    
+    return shap_values_array
 

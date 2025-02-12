@@ -151,9 +151,12 @@
                     <div class="gradient-bar"></div>
                     <span>High Activation</span>
                 </div>
-                <h4 id="ConfidenceScore" style="color: blue; font-weight: bold;"></h4>
+                <h4 id="ConfidenceScore" style="color: rgb(231, 12, 12); font-weight: bold;"></h4>
                 <p><strong>LIME Explanation:</strong></p>
                 <img id="limeImg" alt="LIME Explanation Image" class="img-thumbnail mb-4">
+                <p><strong>SHAP Values:</strong></p>
+                <h5 id="mean_shap_value"></h5>
+                <h5 id="max_shap_value"></h5>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -309,6 +312,8 @@
             $('#ConfidenceScore').text("Confidence Score: " + response.confidence_score + "%");
             $('#gradcamImg').attr("src", "data:image/png;base64," + response.gradcam_img);
             $('#limeImg').attr("src", "data:image/png;base64," + response.lime_img);
+            $('#mean_shap_value').text("Mean Shap Value: "+response.mean_shap_values);
+            $('#max_shap_value').text("Max Shap Value: "+response.max_shap_value);
             $("#resultModal").modal('show');
         },
         error: function() {
