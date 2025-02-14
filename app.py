@@ -300,7 +300,7 @@ def chatbot():
         return jsonify({"reply": "Please provide a message."})
 
     try:
-        openai.api_key = "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"
+        openai.api_key = "OpenAI Api Key here"
 
         # Use gpt-3.5-turbo model
         response = openai.ChatCompletion.create(
