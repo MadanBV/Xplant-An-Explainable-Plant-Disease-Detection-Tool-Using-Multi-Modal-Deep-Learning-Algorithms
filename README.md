@@ -15,17 +15,17 @@ This is crop disease detection system which is developed with the help of Deep l
 
 **Steps to run the code:**
 
-**Step 1: **
+**Step 1:**
 
   Copy repository to Visual Studios code.
 
-**Step 2: **
+**Step 2:**
 
   Download the dataset from kaggle using the link and place it in crop disease detection directory. 
   
   Link - https://www.kaggle.com/datasets/kaushikkumar208/plant-disease-detection
 
-**Step 3: **
+**Step 3:**
 
   Download all the required libraries using the code below.
   
@@ -37,7 +37,7 @@ This is crop disease detection system which is developed with the help of Deep l
   
   pip install Pymongo
 
-**Step 4: **
+**Step 4:**
 
   Run the training codes to train the disease detection model.
   
