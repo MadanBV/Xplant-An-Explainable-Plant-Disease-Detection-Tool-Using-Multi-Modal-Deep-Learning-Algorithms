@@ -10,11 +10,10 @@ Plant_data = db['Plants']
 User_message_data = db['User_message']
 Researcher_message = db['Research_message']
 
-def add_disease_data(plant, disease, file_path, gradcam_path, lime_path, timestamp):
+def add_disease_data(results, file_path, gradcam_path, lime_path, timestamp):
     try:
         prediction_data = {
-            "plant": plant,
-            "disease": disease,
+            "results": results,
             "Image uploaded": file_path,
             "gradcam image": gradcam_path,
             "lime image": lime_path,
