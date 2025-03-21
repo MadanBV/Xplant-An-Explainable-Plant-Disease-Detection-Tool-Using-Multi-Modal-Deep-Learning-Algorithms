@@ -32,8 +32,27 @@ eff_model = tf.keras.models.load_model(eff_model_path)
 res_model_path = r'Trained models\final_resnet-10.keras'
 res_model = tf.keras.models.load_model(res_model_path)
 
+mob_model_path = r'Trained models\MobileNetV2.keras'
+mob_model = tf.keras.models.load_model(mob_model_path)
+
+Google_model_path = r'Trained models\GoogleNetV4.keras'
+google_model = tf.keras.models.load_model(Google_model_path)
+
+alex_model_path = r'Trained models\AlexNet.keras'
+alex_model = tf.keras.models.load_model(alex_model_path)
+
+VGG_model_path = r'Trained models\VGG19.keras'
+VGG_model = tf.keras.models.load_model(VGG_model_path)
+
 def load_and_preprocess_image(img_path):
     img = image.load_img(img_path, target_size=IMG_SIZE)
+    img_array = image.img_to_array(img) / 255.0  
+    img_array = np.expand_dims(img_array, axis=0)  
+    img_array = preprocess_input(img_array)  
+    return img_array
+
+def load_and_preprocess_google_image(img_path):
+    img = image.load_img(img_path, target_size=(299, 299))
     img_array = image.img_to_array(img) / 255.0  
     img_array = np.expand_dims(img_array, axis=0)  
     img_array = preprocess_input(img_array)  
@@ -51,14 +70,34 @@ def prediction(img_path):
     res_pred_class = np.argmax(res_preds, axis=-1)[0]
     res_max_value = np.max(res_preds, axis=-1)[0]
 
-    if eff_max_value > res_max_value:
-        Plant = Crop_list[eff_pred_class]
-        Disease = Disease_list[eff_pred_class]
-        return Plant, Disease
-    else:
-        Plant = Crop_list[eff_pred_class]
-        Disease = Disease_list[eff_pred_class]
-        return Plant, Disease
+    mob_preds = mob_model.predict(img)
+    mob_pred_class = np.argmax(mob_preds, axis=-1)[0]
+    mob_max_value = np.max(mob_preds, axis=-1)[0]
+
+    google_img = load_and_preprocess_google_image(img_path)
+
+    google_preds = google_model.predict(google_img)
+    google_pred_class = np.argmax(google_preds, axis=-1)[0]
+    google_max_value = np.max(google_preds, axis=-1)[0]  
+
+    alex_preds = alex_model.predict(img)
+    alex_pred_class = np.argmax(alex_preds, axis=-1)[0]
+    alex_max_value = np.max(alex_preds, axis=-1)[0]  
+
+    VGG_preds = VGG_model.predict(img)
+    VGG_pred_class = np.argmax(VGG_preds, axis=-1)[0]
+    VGG_max_value = np.max(VGG_preds, axis=-1)[0] 
+    
+    results = [
+        {"Model": "VGG19", "Plant": Crop_list[VGG_pred_class], "Disease": Disease_list[VGG_pred_class], "Confidence": float(VGG_max_value)},
+        {"Model": "GoogleNetV4", "Plant": Crop_list[google_pred_class], "Disease": Disease_list[google_pred_class], "Confidence": float(google_max_value)},
+        {"Model": "AlexNet", "Plant": Crop_list[alex_pred_class], "Disease": Disease_list[alex_pred_class], "Confidence": float(alex_max_value)},
+        {"Model": "EfficientNetV2", "Plant": Crop_list[eff_pred_class], "Disease": Disease_list[eff_pred_class], "Confidence": float(eff_max_value)},
+        {"Model": "ResNet152V2", "Plant": Crop_list[res_pred_class], "Disease": Disease_list[res_pred_class], "Confidence": float(res_max_value)},
+        {"Model": "MobileNetV2", "Plant": Crop_list[mob_pred_class], "Disease": Disease_list[mob_pred_class], "Confidence": float(mob_max_value)}
+    ]
+    
+    return results
 
 #Plant detection
 def plant_predict(img_path):

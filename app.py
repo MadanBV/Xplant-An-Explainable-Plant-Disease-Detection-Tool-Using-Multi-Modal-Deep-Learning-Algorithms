@@ -110,14 +110,10 @@ def research_dashboard():
     
     disease_data = database_op.disp_disease_data()
     total_count = len(disease_data)
-    healthy_count = sum(1 for record in disease_data if record['disease'] == "healthy")
-    disease_count = total_count - healthy_count
     return render_template(
         'research_dashboard.html',
         disease_data=disease_data,
         total_count=total_count,
-        healthy_count=healthy_count,
-        disease_count=disease_count
     )
 
 @app.route("/save_message", methods=["POST"])
@@ -215,15 +211,7 @@ def disease_detection():
     file.save(file_path)
 
     # Perform AI model prediction
-    Plant, Disease = AI_model.prediction(file_path)
-
-    if Disease == "healthy":
-        database_op.add_disease_data(Plant, Disease, file_path, None, None, datetime.now())
-        return jsonify({
-            'Plant': Plant,
-            'Message': "Plant doesn't have any disease",
-            'user_image': url_for('uploaded_file', folder='Image_Uploaded', filename=filename, _external=True)
-        })
+    results = AI_model.prediction(file_path)
 
     # Grad-CAM and Confidence Score
     gradcam_img, confidence_score = AI_model.plot_gradcam(file_path)
@@ -238,22 +226,21 @@ def disease_detection():
     lime_path = os.path.join(app.config['LIME_Uploaded'], lime_filename)
     lime_img.save(lime_path)
     lime_img_base64 = get_image_data(lime_img)
-
+    """
     shap_values = AI_model.explain_with_shap(file_path)
     mean_shap = np.abs(shap_values).mean()
     max_SHAP = np.abs(shap_values).max()
+    """
 
-    database_op.add_disease_data(Plant, Disease, file_path, gradcam_path, lime_path, datetime.now())
+    database_op.add_disease_data(results, file_path, gradcam_path, lime_path, datetime.now())
 
     return jsonify({
-        'Plant': Plant,
-        'Disease': Disease,
+        'results': results,
         'Message': "Highlighted parts show the disease",
         'gradcam_img': gradcam_img_base64,
         'lime_img': lime_img_base64,
-        'confidence_score': round(confidence_score * 100, 2),
-        'mean_shap_values': mean_shap,
-        'max_shap_value' : max_SHAP
+        'user_image': url_for('uploaded_file', folder='Image_Uploaded', filename=filename, _external=True),
+        'confidence_score': round(confidence_score * 100, 2)
     })
 
 
@@ -300,7 +287,7 @@ def chatbot():
         return jsonify({"reply": "Please provide a message."})
 
     try:
-        openai.api_key = "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"
+        openai.api_key = "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"
 
         # Use gpt-3.5-turbo model
         response = openai.ChatCompletion.create(

@@ -141,10 +141,21 @@
                 </button>
             </div>
             <div class="modal-body text-center">
-                <h4 id="Plant"></h4>
-                <h4 id="Disease"></h4>
+                <table class="table table-bordered text-center">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Model Name</th>
+                            <th>Crop</th>
+                            <th>Disease</th>
+                            <th>Confidence Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultTableBody">
+                    </tbody>
+                </table>
                 <h4 id="Message"></h4>
                 <p><strong>Grad-CAM:</strong></p>
+                <img id="userImg" alt="User Uploaded Image" class="img-thumbnail mb-4">
                 <img id="gradcamImg" alt="Grad-CAM Image" class="img-thumbnail mb-4">
                 <div class="gradcam-legend">
                     <span>Low Activation</span>
@@ -153,10 +164,8 @@
                 </div>
                 <h4 id="ConfidenceScore" style="color: rgb(231, 12, 12); font-weight: bold;"></h4>
                 <p><strong>LIME Explanation:</strong></p>
+                <img id="userImg1" alt="User Uploaded Image" class="img-thumbnail mb-4">
                 <img id="limeImg" alt="LIME Explanation Image" class="img-thumbnail mb-4">
-                <p><strong>SHAP Values:</strong></p>
-                <h5 id="mean_shap_value"></h5>
-                <h5 id="max_shap_value"></h5>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -293,7 +302,21 @@
         });
     }
 
-    function submitDiseaseForm() {
+    function updateResultTable(data) {
+    let tableBody = document.getElementById("resultTableBody");
+    tableBody.innerHTML = "";
+    data.results.forEach(result => {
+        let row = `<tr>
+            <td>${result.Model}</td>
+            <td>${result.Plant}</td>
+            <td>${result.Disease}</td>
+            <td>${(result.Confidence * 100).toFixed(2)}%</td>
+        </tr>`;
+        tableBody.innerHTML += row;
+    });
+}
+
+function submitDiseaseForm() {
     $("#loadingDisease").show();
     var formData = new FormData(document.getElementById("diseaseForm"));
 
@@ -306,14 +329,11 @@
         success: function(response) {
             $("#loadingDisease").hide();
 
-            $('#Plant').text("Plant: " + response.Plant);
-            $('#Disease').text("Disease: " + response.Disease);
-            $('#Message').text(response.Message);
-            $('#ConfidenceScore').text("Confidence Score: " + response.confidence_score + "%");
-            $('#gradcamImg').attr("src", "data:image/png;base64," + response.gradcam_img);
-            $('#limeImg').attr("src", "data:image/png;base64," + response.lime_img);
-            $('#mean_shap_value').text("Mean Shap Value: "+response.mean_shap_values);
-            $('#max_shap_value').text("Max Shap Value: "+response.max_shap_value);
+            updateResultTable(response);
+            $("#gradcamImg").attr("src", "data:image/png;base64," + response.gradcam_img);
+            $('#userImg').attr("src", response.user_image);
+            $("#limeImg").attr("src", "data:image/png;base64," + response.lime_img);
+            $('#userImg1').attr("src", response.user_image);
             $("#resultModal").modal('show');
         },
         error: function() {
