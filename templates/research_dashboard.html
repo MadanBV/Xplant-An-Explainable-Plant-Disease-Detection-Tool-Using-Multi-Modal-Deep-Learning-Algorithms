@@ -73,8 +73,18 @@
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
             </div>
             <div class="modal-body text-center">
-                <h4 id="plantName"></h4>
-                <h4 id="diseaseName"></h4>
+                <table class="table table-bordered text-center">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Model Name</th>
+                            <th>Crop</th>
+                            <th>Disease</th>
+                            <th>Confidence Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultTableBody">
+                    </tbody>
+                </table>
                 <div class="my-3">
                     <p><strong>Grad-CAM Image:</strong></p>
                     <img id="userImage" alt="User Image" class="img-thumbnail mb-4">
@@ -105,6 +115,21 @@
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
+
+function updateResultTable(data) {
+    let tableBody = document.getElementById("resultTableBody");
+    tableBody.innerHTML = "";
+    data.results.forEach(result => {
+        let row = `<tr>
+            <td>${result.Model}</td>
+            <td>${result.Plant}</td>
+            <td>${result.Disease}</td>
+            <td>${(result.Confidence * 100).toFixed(2)}%</td>
+        </tr>`;
+        tableBody.innerHTML += row;
+    });
+}
+
     let currentIndex = 0;
 
     function openRecordModal(index) {
@@ -124,8 +149,7 @@
                 }
                 
                 $("#recordId").val(data._id); 
-                $("#plantName").text(`Plant: ${data.Plant}`);
-                $("#diseaseName").text(`Disease: ${data.Disease}`);
+                updateResultTable(data);
                 $("#userImage").attr("src", "data:image/png;base64," + data.Image_uploaded);
                 $("#gradcamImage").attr("src", "data:image/png;base64," + data.gradcam_image);
                 $("#userImage1").attr("src", "data:image/png;base64," + data.Image_uploaded);

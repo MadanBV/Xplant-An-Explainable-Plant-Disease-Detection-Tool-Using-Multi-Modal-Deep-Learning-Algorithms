@@ -21,8 +21,8 @@
                     <a class="nav-link" href="#dashboards">Dashboards</a>
                     <div class="dropdown-content">
                         <a href="{{ url_for('user_dashboard') }}">User Dashboard</a>
-                        <a href="{{ url_for('research_dashboard') }}">Researchers Dashboard</a>
-                        <a href="{{ url_for('developer_dashboard') }}">Developer Dashboard</a>
+                        <a href="{{ url_for('login', role='researcher') }}">Researcher Login</a>
+                        <a href="{{ url_for('login', role='developer') }}">Developer Login</a>
                     </div>
                 </li>
                 <li class="nav-item"><a class="nav-link" href="#about">About</a></li>

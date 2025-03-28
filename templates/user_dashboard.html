@@ -182,8 +182,18 @@
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
             </div>
             <div class="modal-body text-center">
-                <h4 id="plantName"></h4>
-                <h4 id="diseaseName"></h4>
+                <table class="table table-bordered text-center">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Model Name</th>
+                            <th>Crop</th>
+                            <th>Disease</th>
+                            <th>Confidence Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                    </tbody>
+                </table>
                 <div class="my-3">
                     <p><strong>Grad-CAM Image:</strong></p>
                     <img id="userImage" alt="User Image" class="img-thumbnail mb-4">
@@ -235,6 +245,34 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
 
+function updateResultTable(data) {
+    let tableBody = document.getElementById("resultTableBody");
+    tableBody.innerHTML = "";
+    data.results.forEach(result => {
+        let row = `<tr>
+            <td>${result.Model}</td>
+            <td>${result.Plant}</td>
+            <td>${result.Disease}</td>
+            <td>${(result.Confidence * 100).toFixed(2)}%</td>
+        </tr>`;
+        tableBody.innerHTML += row;
+    });
+}
+
+function updateHistoryTable(data) {
+    let tableBody = document.getElementById("historyTableBody");
+    tableBody.innerHTML = "";
+    data.results.forEach(result => {
+        let row = `<tr>
+            <td>${result.Model}</td>
+            <td>${result.Plant}</td>
+            <td>${result.Disease}</td>
+            <td>${(result.Confidence * 100).toFixed(2)}%</td>
+        </tr>`;
+        tableBody.innerHTML += row;
+    });
+}
+
     let currentIndex = 0;
 
     function openhistoryModal(index) {
@@ -254,8 +292,7 @@
                 }
             
                 $("#recordId").val(data._id); 
-                $("#plantName").text(`Plant: ${data.Plant}`);
-                $("#diseaseName").text(`Disease: ${data.Disease}`);
+                updateHistoryTable(data);
                 $("#userImage").attr("src", "data:image/png;base64," + data.Image_uploaded);
                 $("#gradcamImage").attr("src", "data:image/png;base64," + data.gradcam_image);
                 $("#userImage1").attr("src", "data:image/png;base64," + data.Image_uploaded);
@@ -283,38 +320,36 @@
     }
 
     function submitPlantForm() {
-        $("#loadingPlant").show();
-        var formData = new FormData(document.getElementById("plantForm"));
-        $.ajax({
-            url: "/plant_detection",
-            type: "POST",
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                $("#loadingPlant").hide();
-                $("#plantResult").text("Plant: " + response.Plant);
-            },
-            error: function() {
-                $("#loadingPlant").hide();
-                alert("Error occurred.");
-            }
-        });
-    }
+    $("#loadingPlant").show();
+    var formData = new FormData(document.getElementById("plantForm"));
 
-    function updateResultTable(data) {
-    let tableBody = document.getElementById("resultTableBody");
-    tableBody.innerHTML = "";
-    data.results.forEach(result => {
-        let row = `<tr>
-            <td>${result.Model}</td>
-            <td>${result.Plant}</td>
-            <td>${result.Disease}</td>
-            <td>${(result.Confidence * 100).toFixed(2)}%</td>
-        </tr>`;
-        tableBody.innerHTML += row;
+    $.ajax({
+        url: "/plant_detection",
+        type: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            console.log("Response:", response);  
+            $("#loadingPlant").hide();
+
+            if (response.Image) {
+                $("#plantResult").html(`<div class="text-center">
+        <h4>Plant: ${response.Plant}</h4>
+        <img src="${response.Image}" alt="Uploaded Image" class="img-thumbnail mt-3" style="max-width: 300px;">
+    </div>`);
+            } else {
+                $("#plantResult").text("Plant: " + response.Plant + " (Image not available)");
+            }
+        },
+        error: function() {
+            $("#loadingPlant").hide();
+            alert("Error occurred.");
+        }
     });
 }
+
+    
 
 function submitDiseaseForm() {
     $("#loadingDisease").show();

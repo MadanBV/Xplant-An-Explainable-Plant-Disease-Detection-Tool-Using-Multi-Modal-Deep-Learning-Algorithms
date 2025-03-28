@@ -26,10 +26,10 @@
                         </div>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="addUserDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Add User</a>
-                        <div class="dropdown-menu" aria-labelledby="addUserDropdown">
-                            <a class="dropdown-item" href="{{ url_for('user_dashboard') }}">Add Researcher</a>
-                            <a class="dropdown-item" href="{{ url_for('developer_dashboard') }}">Add Developer</a>
+                        <a class="nav-link dropdown-toggle" href="#" id="addUserDropdown" role="button" data-toggle="dropdown">Add User</a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#addUserModal" onclick="setUserRole('researcher')">Add Researcher</a>
+                            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#addUserModal" onclick="setUserRole('developer')">Add Developer</a>
                         </div>
                     </li>
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Logout</a></li>
@@ -43,7 +43,7 @@
         <div class="hero">
             <h1 class="display-4">Intelligent Agriculture Suggestion System</h1>
             <p class="lead">Empower Farming with Precision and Transparency</p>
-            <button class="btn btn-primary" data-toggle="modal" data-target="#plantModal">Plant Detection Data</button>
+            <button class="btn btn-primary" data-toggle="modal" data-target="#plantDataModal">Plant Detection Data</button>
             <button class="btn btn-primary" data-toggle="modal" onclick="openhistoryModal(0)">Disease Detection Data</button>
         </div>
     </section>
@@ -121,8 +121,18 @@
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
                 </div>
                 <div class="modal-body text-center">
-                    <h4>Plant: <span id="plantName"></span></h4>
-                    <h4>Disease: <span id="diseaseName"></span></h4>
+                    <table class="table table-bordered text-center">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Model Name</th>
+                                <th>Crop</th>
+                                <th>Disease</th>
+                                <th>Confidence Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultTableBody">
+                        </tbody>
+                    </table>
                     <h5>Grad-CAM Image:</h5>
                     <img id="userImage" src="" alt="User Image" class="img-fluid">
                     <img id="gradcamImage" src="" alt="Grad-CAM Image" class="img-fluid">
@@ -140,11 +150,81 @@
         </div>
     </div>
 
+    <!-- Plant Data Modal -->
+<div class="modal fade" id="plantDataModal" tabindex="-1" role="dialog" aria-labelledby="plantDataModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="plantDataModalLabel">Plant Detection Data</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Plant Name</th>
+                            <th>Image</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for plant in plant_data %}
+                        <tr>
+                            <td>{{ plant.plant }}</td>
+                            <td>
+                                <img src="{{ url_for('uploaded_file', folder='Plant_Uploaded', filename=plant.image_filename) }}"
+                                     alt="Plant Image" style="width:100px;height:100px;">
+                              </td>
+                            <td>{{ plant.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New <span id="userRoleTitle"></span></h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form action="/add_user" method="post">
+                    <input type="text" class="form-control my-2" name="username" placeholder="Username" required>
+                    <input type="password" class="form-control my-2" name="password" placeholder="Password" required>
+                    <input type="hidden" id="roleInput" name="role">
+                    <button type="submit" class="btn btn-success btn-block">Add User</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
     <!-- JavaScript Section -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
+
+function updateResultTable(data) {
+    let tableBody = document.getElementById("resultTableBody");
+    tableBody.innerHTML = "";
+    data.results.forEach(result => {
+        let row = `<tr>
+            <td>${result.Model}</td>
+            <td>${result.Plant}</td>
+            <td>${result.Disease}</td>
+            <td>${(result.Confidence * 100).toFixed(2)}%</td>
+        </tr>`;
+        tableBody.innerHTML += row;
+    });
+}
 
     let currentIndex = 0;
 
@@ -165,8 +245,7 @@
                 }
         
                 $("#recordId").val(data._id); 
-                $("#plantName").text(`Plant: ${data.Plant}`);
-                $("#diseaseName").text(`Disease: ${data.Disease}`);
+                updateResultTable(data);
                 $("#userImage").attr("src", "data:image/png;base64," + data.Image_uploaded);
                 $("#gradcamImage").attr("src", "data:image/png;base64," + data.gradcam_image);
                 $("#userImage1").attr("src", "data:image/png;base64," + data.Image_uploaded);
@@ -242,5 +321,13 @@
             });
         }
     </script>
+
+<script>
+    function setUserRole(role) {
+        document.getElementById('roleInput').value = role;
+        document.getElementById('userRoleTitle').innerText = role.charAt(0).toUpperCase() + role.slice(1);
+    }
+    </script>
+    
 </body>
 </html>

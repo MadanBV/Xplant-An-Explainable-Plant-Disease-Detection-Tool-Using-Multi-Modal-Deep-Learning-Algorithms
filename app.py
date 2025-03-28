@@ -12,6 +12,7 @@ from datetime import datetime
 from bson import ObjectId
 import openai
 import numpy as np
+from flask import session
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
@@ -97,24 +98,25 @@ def get_history_record(index):
     lime_img = get_image_data(lime_img)
     
     return jsonify({
-        'Plant': record["plant"],
-        'Disease': record["disease"],
+        'results': record["results"],
         'Message': "Highlighted parts show the disease",
         'Image_uploaded': user_img,
         'gradcam_image': gradcam_img,
         'lime_image': lime_img
     })
 
-@app.route("/research_dashboard", methods=["GET", "POST"])
+@app.route("/research_dashboard")
 def research_dashboard():
-    
-    disease_data = database_op.disp_disease_data()
-    total_count = len(disease_data)
-    return render_template(
-        'research_dashboard.html',
-        disease_data=disease_data,
-        total_count=total_count,
-    )
+    if 'role' in session and session['role'] == 'researcher':
+        disease_data = database_op.disp_disease_data()
+        total_count = len(disease_data)
+        return render_template(
+            'research_dashboard.html',
+            disease_data=disease_data,
+            total_count=total_count,
+        )
+    else:
+        return redirect(url_for('login', role='researcher'))
 
 @app.route("/save_message", methods=["POST"])
 def save_message():
@@ -165,8 +167,7 @@ def get_record(index):
     
     return jsonify({
         '_id': record["_id"],
-        'Plant': record["plant"],
-        'Disease': record["disease"],
+        'results': record["results"],
         'Message': "Highlighted parts show the disease",
         'Image_uploaded': user_img,
         'gradcam_image': gradcam_img,
@@ -240,14 +241,12 @@ def disease_detection():
         'gradcam_img': gradcam_img_base64,
         'lime_img': lime_img_base64,
         'user_image': url_for('uploaded_file', folder='Image_Uploaded', filename=filename, _external=True),
-        'confidence_score': round(confidence_score * 100, 2)
     })
 
 
 @app.route("/plant_detection", methods=["POST"])
 def plant_detection():
     if request.method == "POST":
-        # Check if the file part is in the request
         if "file" not in request.files:
             flash("No file part")
             return redirect(request.url)
@@ -257,26 +256,31 @@ def plant_detection():
             flash("No selected file")
             return redirect(request.url)
 
-        # Save the uploaded file
         if file:
             filename = secure_filename(file.filename)
             file_path = os.path.join(app.config['Plant_Uploaded'], filename)
             file.save(file_path)
 
-            # Use the model to predict the plant type or health status
             Plant = AI_model.plant_predict(file_path)
 
             database_op.add_plant_data(Plant, file_path, datetime.now())
 
-            # Return a JSON response
             return jsonify({
                 'Plant': Plant,
-            })        
+                'Image': url_for('uploaded_file', folder='Plant_Uploaded', filename=filename, _external=True)
+            })    
 
 
 @app.route("/developer_dashboard")
 def developer_dashboard():
-    return render_template('developer_dashboard.html')
+    if 'role' in session and session['role'] == 'developer':
+        plant_data = database_op.disp_plant_data()
+        for plant in plant_data:
+            plant['image_filename'] = os.path.basename(plant['Image uploaded']) 
+        return render_template('developer_dashboard.html', plant_data=plant_data)
+    else:
+        return redirect(url_for('login', role='developer'))
+    
 
 @app.route("/chatbot", methods=["POST"])
 def chatbot():
@@ -287,7 +291,7 @@ def chatbot():
         return jsonify({"reply": "Please provide a message."})
 
     try:
-        openai.api_key = "OpenAI API key"
+        openai.api_key = "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"
 
         # Use gpt-3.5-turbo model
         response = openai.ChatCompletion.create(
@@ -305,6 +309,46 @@ def chatbot():
         return jsonify({"reply": reply})
     except Exception as e:
         return jsonify({"reply": f"Error: {str(e)}"})
+    
+
+@app.route('/login/<role>', methods=['GET', 'POST'])
+def login(role):
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        if database_op.validate_login(username, password, role):
+            session['username'] = username
+            session['role'] = role
+            if role == 'researcher':
+                return redirect(url_for('research_dashboard'))
+            elif role == 'developer':
+                return redirect(url_for('developer_dashboard'))
+        else:
+            flash('Invalid username or password!')
+            return redirect(url_for('login', role=role))
+
+    return render_template('login.html', role=role)
+
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    session.pop('role', None)
+    return redirect(url_for('index'))
+
+@app.route("/add_user", methods=["POST"])
+def add_user():
+    username = request.form.get("username")
+    password = request.form.get("password")
+    role = request.form.get("role")
+
+    if username and password and role:
+        database_op.add_user(username, password, role)
+        flash("User added successfully!")
+    else:
+        flash("Please provide all required fields.")
+    
+    return redirect(url_for("developer_dashboard"))
 
 
 if __name__ == "__main__":

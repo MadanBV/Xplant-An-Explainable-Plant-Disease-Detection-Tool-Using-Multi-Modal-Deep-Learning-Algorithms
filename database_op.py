@@ -9,6 +9,7 @@ Disease_data = db['Diseases']
 Plant_data = db['Plants']
 User_message_data = db['User_message']
 Researcher_message = db['Research_message']
+Login_data = db['Login_data']
 
 def add_disease_data(results, file_path, gradcam_path, lime_path, timestamp):
     try:
@@ -32,8 +33,7 @@ def disp_disease_data():
     try:
         Disp_data = list(Disease_data.find({}, {
             "_id": 1,
-            "plant": 1,
-            "disease": 1,
+            "results": 1,
             "Image uploaded": 1,
             "gradcam image": 1,
             "lime image": 1
@@ -61,6 +61,24 @@ def add_plant_data(plant, file_path, timestamp):
     except Exception as e:
         print(f"Error inserting disease data: {e}")
         return None
+    
+def disp_plant_data():
+    """Retrieve all plant data from MongoDB"""
+    try:
+        plant_data = list(Plant_data.find({}, {
+            "_id": 1,
+            "plant": 1,
+            "Image uploaded": 1,
+            "timestamp": 1
+        }))
+
+        for data in plant_data:
+            data['_id'] = str(data['_id'])
+        
+        return plant_data
+    except Exception as e:
+        print(f"Error retrieving plant data: {e}")
+        return []
 
 def save_contact(name, email, message, timestamp):
     """Save user contact/message data to MongoDB"""
@@ -137,4 +155,21 @@ def add_comments(record_id, user_comment, developer_comment):
         return False
     except Exception as e:
         print(f"Error adding comments: {e}")
+        return False
+
+def add_user(username, password, role):
+    try:
+        user_data = {"username": username, "password": password, "role": role}
+        Login_data.insert_one(user_data)
+        return True
+    except Exception as e:
+        print(f"Error adding user: {e}")
+        return False
+
+def validate_login(username, password, role):
+    try:
+        user = Login_data.find_one({"username": username, "password": password, "role": role})
+        return user is not None
+    except Exception as e:
+        print(f"Error validating login: {e}")
         return False
