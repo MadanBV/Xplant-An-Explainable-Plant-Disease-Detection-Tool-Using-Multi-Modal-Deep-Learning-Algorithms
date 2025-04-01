@@ -43,8 +43,6 @@
         <div class="hero">
             <h1 class="display-4">Intelligent Agriculture Suggestion System</h1>
             <p class="lead">Empower Farming with Precision and Transparency</p>
-            <button class="btn btn-primary" data-toggle="modal" data-target="#plantDataModal">Plant Detection Data</button>
-            <button class="btn btn-primary" data-toggle="modal" onclick="openhistoryModal(0)">Disease Detection Data</button>
         </div>
     </section>
 
@@ -54,8 +52,8 @@
             <h2 class="text-center mb-4">Developer Functions</h2>
             <p class="text-center">Select the function to be performed below:</p>
             <div class="row justify-content-center">
-                <button class="btn btn-secondary col-md-4 m-2" data-toggle="modal" data-target="#plantModal">Plant Detection</button>
-                <button class="btn btn-secondary col-md-4 m-2" data-toggle="modal" data-target="#diseaseModal">Disease Detection</button>
+                <button class="btn btn-secondary col-md-4 m-2" data-toggle="modal" data-target="#plantDataModal">Plant Detection</button>
+                <button class="btn btn-secondary col-md-4 m-2" data-toggle="modal" onclick="openhistoryModal(0)">Disease Detection</button>
                 <button class="btn btn-secondary col-md-4 m-2" data-toggle="modal" onclick="fetchUserMessages()">View User Messages</button>
             </div>
         </div>
@@ -134,11 +132,52 @@
                         </tbody>
                     </table>
                     <h5>Grad-CAM Image:</h5>
-                    <img id="userImage" src="" alt="User Image" class="img-fluid">
-                    <img id="gradcamImage" src="" alt="Grad-CAM Image" class="img-fluid">
+                    <div class="row justify-content-center">
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <p>VGG19</p>
+                            <img id="VgggradImg" class="img-thumbnail">
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <p>GoogleNetV4</p>
+                            <img id="GoogradImg" class="img-thumbnail">
+                        </div>
+                        <br>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <p>EfficientNetV2</p>
+                            <img id="EffgradImg" class="img-thumbnail">
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <p>MobileNetV2</p>
+                            <img id="MobgradImg" class="img-thumbnail">
+                        </div>
+                    </div>
                     <h5>LIME Explanation:</h5>
-                    <img id="userImage1" src="" alt="User Image" class="img-fluid">
-                    <img id="limeImage" src="" alt="LIME Explanation Image" class="img-fluid">
+                    <div class="row justify-content-center">
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <p>VGG19</p>
+                            <img id="VgglimeImg" class="img-thumbnail">
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <p>GoogleNetV4</p>
+                            <img id="GoolimeImg" class="img-thumbnail">
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <p>AlexNet</p>
+                            <img id="AlexlimeImg" class="img-thumbnail">
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <p>ResNet152V2</p>
+                            <img id="ReslimeImg" class="img-thumbnail">
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <p>EfficientNetV2</p>
+                            <img id="EfflimeImg" class="img-thumbnail">
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <p>MobileNetV2</p>
+                            <img id="MoblimeImg" class="img-thumbnail">
+                        </div>
+                    </div>
                     <h5>Comment from Researchers</h5>
                     <textarea class="form-control" id="researcherComment" rows="3" readonly></textarea>
                 </div>
@@ -246,10 +285,17 @@ function updateResultTable(data) {
         
                 $("#recordId").val(data._id); 
                 updateResultTable(data);
+                $("#VgggradImg").attr("src", "data:image/png;base64," + data.Vgg_gradcam_img);
+                $("#GoogradImg").attr("src", "data:image/png;base64," + data.Goo_gradcam_img);
+                $("#EffgradImg").attr("src", "data:image/png;base64," + data.Eff_gradcam_img);
+                $("#MobgradImg").attr("src", "data:image/png;base64," + data.Mob_gradcam_img);
                 $("#userImage").attr("src", "data:image/png;base64," + data.Image_uploaded);
-                $("#gradcamImage").attr("src", "data:image/png;base64," + data.gradcam_image);
-                $("#userImage1").attr("src", "data:image/png;base64," + data.Image_uploaded);
-                $("#limeImage").attr("src", "data:image/png;base64," + data.lime_image);
+                $("#EfflimeImg").attr("src", "data:image/png;base64," + data.Eff_lime_img);
+                $("#VgglimeImg").attr("src", "data:image/png;base64," + data.Vgg_lime_img);
+                $("#MoblimeImg").attr("src", "data:image/png;base64," + data.Mob_lime_img);
+                $("#GoolimeImg").attr("src", "data:image/png;base64," + data.Goo_lime_img);
+                $("#ReslimeImg").attr("src", "data:image/png;base64," + data.Res_lime_img);
+                $("#AlexlimeImg").attr("src", "data:image/png;base64," + data.Alex_lime_img);
                 $("#researcherComment").val(data.developer_comment || "No comments available.");
                 $("#diseaseRecordModal").modal("show");
             },
@@ -328,6 +374,6 @@ function updateResultTable(data) {
         document.getElementById('userRoleTitle').innerText = role.charAt(0).toUpperCase() + role.slice(1);
     }
     </script>
-    
+
 </body>
 </html>

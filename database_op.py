@@ -11,7 +11,7 @@ User_message_data = db['User_message']
 Researcher_message = db['Research_message']
 Login_data = db['Login_data']
 
-def add_disease_data(results, file_path, gradcam_path_Eff, gradcam_path_Vgg, gradcam_path_Mob, gradcam_path_Goo, lime_path, timestamp):
+def add_disease_data(results, file_path, gradcam_path_Eff, gradcam_path_Vgg, gradcam_path_Mob, gradcam_path_Goo, lime_paths_dict, timestamp):
     try:
         prediction_data = {
             "results": results,
@@ -20,7 +20,12 @@ def add_disease_data(results, file_path, gradcam_path_Eff, gradcam_path_Vgg, gra
             "Vgg gradcam image": gradcam_path_Vgg,
             "Mob gradcam image": gradcam_path_Mob,
             "Goo gradcam image": gradcam_path_Goo,
-            "lime image": lime_path,
+            "Eff lime image": lime_paths_dict.get("Eff_lime"),
+            "Vgg lime image": lime_paths_dict.get("Vgg_lime"),
+            "Mob lime image": lime_paths_dict.get("Mob_lime"),
+            "Goo lime image": lime_paths_dict.get("Goo_lime"),
+            "Res lime image": lime_paths_dict.get("Res_lime"),
+            "Alex lime image": lime_paths_dict.get("Alex_lime"),
             "timestamp": timestamp,
             "user_comment": "",
             "developer_comment": ""
@@ -38,8 +43,16 @@ def disp_disease_data():
             "_id": 1,
             "results": 1,
             "Image uploaded": 1,
-            "gradcam image": 1,
-            "lime image": 1
+            "Eff gradcam image": 1,
+            "Vgg gradcam image": 1,
+            "Mob gradcam image": 1,
+            "Goo gradcam image": 1,
+            "Eff lime image": 1,
+            "Vgg lime image": 1,
+            "Mob lime image": 1,
+            "Goo lime image": 1,
+            "Res lime image": 1,
+            "Alex lime image": 1
         }))
 
         for data in Disp_data:

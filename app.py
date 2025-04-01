@@ -91,18 +91,50 @@ def get_history_record(index):
     user_img = image.load_img(record["Image uploaded"], target_size=IMG_SIZE)
     user_img = get_image_data(user_img)
 
-    gradcam_img = image.load_img(record["gradcam image"], target_size=IMG_SIZE)
-    gradcam_img = get_image_data(gradcam_img)
+    Eff_gradcam_img = image.load_img(record["Eff gradcam image"], target_size=IMG_SIZE)
+    Eff_gradcam_img = get_image_data(Eff_gradcam_img)
 
-    lime_img = image.load_img(record["lime image"], target_size=IMG_SIZE)
-    lime_img = get_image_data(lime_img)
+    Vgg_gradcam_img = image.load_img(record["Vgg gradcam image"], target_size=IMG_SIZE)
+    Vgg_gradcam_img = get_image_data(Vgg_gradcam_img)
+
+    Goo_gradcam_img = image.load_img(record["Goo gradcam image"], target_size=IMG_SIZE)
+    Goo_gradcam_img = get_image_data(Goo_gradcam_img)
+
+    Mob_gradcam_img = image.load_img(record["Mob gradcam image"], target_size=IMG_SIZE)
+    Mob_gradcam_img = get_image_data(Mob_gradcam_img)
+
+    Eff_lime_img = image.load_img(record["Eff lime image"], target_size=IMG_SIZE)
+    Eff_lime_img = get_image_data(Eff_lime_img)
+
+    Vgg_lime_img = image.load_img(record["Vgg lime image"], target_size=IMG_SIZE)
+    Vgg_lime_img = get_image_data(Vgg_lime_img)
+
+    Goo_lime_img = image.load_img(record["Goo lime image"], target_size=IMG_SIZE)
+    Goo_lime_img = get_image_data(Goo_lime_img)
+
+    Alex_lime_img = image.load_img(record["Alex lime image"], target_size=IMG_SIZE)
+    Alex_lime_img = get_image_data(Alex_lime_img)
+
+    Res_lime_img = image.load_img(record["Res lime image"], target_size=IMG_SIZE)
+    Res_lime_img = get_image_data(Res_lime_img)
+
+    Mob_lime_img = image.load_img(record["Mob lime image"], target_size=IMG_SIZE)
+    Mob_lime_img = get_image_data(Mob_lime_img)
     
     return jsonify({
         'results': record["results"],
         'Message': "Highlighted parts show the disease",
         'Image_uploaded': user_img,
-        'gradcam_image': gradcam_img,
-        'lime_image': lime_img
+        'Eff_gradcam_img': Eff_gradcam_img,
+        'Vgg_gradcam_img': Vgg_gradcam_img,
+        'Goo_gradcam_img': Goo_gradcam_img,
+        'Mob_gradcam_img': Mob_gradcam_img,
+        'Eff_lime_img': Eff_lime_img,
+        'Vgg_lime_img': Vgg_lime_img,
+        'Goo_lime_img': Goo_lime_img,
+        'Alex_lime_img': Alex_lime_img,
+        'Res_lime_img': Res_lime_img,
+        'Mob_lime_img': Mob_lime_img
     })
 
 @app.route("/research_dashboard")
@@ -159,19 +191,50 @@ def get_record(index):
     user_img = image.load_img(record["Image uploaded"], target_size=IMG_SIZE)
     user_img = get_image_data(user_img)
 
-    gradcam_img = image.load_img(record["gradcam image"], target_size=IMG_SIZE)
-    gradcam_img = get_image_data(gradcam_img)
+    Eff_gradcam_img = image.load_img(record["Eff gradcam image"], target_size=IMG_SIZE)
+    Eff_gradcam_img = get_image_data(Eff_gradcam_img)
 
-    lime_img = image.load_img(record["lime image"], target_size=IMG_SIZE)
-    lime_img = get_image_data(lime_img)
+    Vgg_gradcam_img = image.load_img(record["Vgg gradcam image"], target_size=IMG_SIZE)
+    Vgg_gradcam_img = get_image_data(Vgg_gradcam_img)
+
+    Goo_gradcam_img = image.load_img(record["Goo gradcam image"], target_size=IMG_SIZE)
+    Goo_gradcam_img = get_image_data(Goo_gradcam_img)
+
+    Mob_gradcam_img = image.load_img(record["Mob gradcam image"], target_size=IMG_SIZE)
+    Mob_gradcam_img = get_image_data(Mob_gradcam_img)
+
+    Eff_lime_img = image.load_img(record["Eff lime image"], target_size=IMG_SIZE)
+    Eff_lime_img = get_image_data(Eff_lime_img)
+
+    Vgg_lime_img = image.load_img(record["Vgg lime image"], target_size=IMG_SIZE)
+    Vgg_lime_img = get_image_data(Vgg_lime_img)
+
+    Goo_lime_img = image.load_img(record["Goo lime image"], target_size=IMG_SIZE)
+    Goo_lime_img = get_image_data(Goo_lime_img)
+
+    Alex_lime_img = image.load_img(record["Alex lime image"], target_size=IMG_SIZE)
+    Alex_lime_img = get_image_data(Alex_lime_img)
+
+    Res_lime_img = image.load_img(record["Res lime image"], target_size=IMG_SIZE)
+    Res_lime_img = get_image_data(Res_lime_img)
+
+    Mob_lime_img = image.load_img(record["Mob lime image"], target_size=IMG_SIZE)
+    Mob_lime_img = get_image_data(Mob_lime_img)
     
     return jsonify({
-        '_id': record["_id"],
         'results': record["results"],
         'Message': "Highlighted parts show the disease",
         'Image_uploaded': user_img,
-        'gradcam_image': gradcam_img,
-        'lime_image': lime_img
+        'Eff_gradcam_img': Eff_gradcam_img,
+        'Vgg_gradcam_img': Vgg_gradcam_img,
+        'Goo_gradcam_img': Goo_gradcam_img,
+        'Mob_gradcam_img': Mob_gradcam_img,
+        'Eff_lime_img': Eff_lime_img,
+        'Vgg_lime_img': Vgg_lime_img,
+        'Goo_lime_img': Goo_lime_img,
+        'Alex_lime_img': Alex_lime_img,
+        'Res_lime_img': Res_lime_img,
+        'Mob_lime_img': Mob_lime_img
     })
 
 @app.route("/get_user_message")

@@ -164,6 +164,7 @@
                         <p>GoogleNetV4</p>
                         <img id="GoogradImg" class="img-thumbnail">
                     </div>
+                    <br>
                     <div class="col-md-6 col-lg-4 mb-3">
                         <p>EfficientNetV2</p>
                         <img id="EffgradImg" class="img-thumbnail">
@@ -189,6 +190,7 @@
                         <p>GoogleNetV4</p>
                         <img id="GoolimeImg" class="img-thumbnail">
                     </div>
+                    <br>
                     <div class="col-md-6 col-lg-4 mb-3">
                         <p>AlexNet</p>
                         <img id="AlexlimeImg" class="img-thumbnail">
@@ -236,14 +238,57 @@
                 </table>
                 <div class="my-3">
                     <p><strong>Grad-CAM Image:</strong></p>
-                    <img id="userImage" alt="User Image" class="img-thumbnail mb-4">
-                    <img id="gradcamImage" alt="Grad-CAM Image" class="img-thumbnail mb-4">
-                </div>
-                <div class="my-3">
+                    <div class="row justify-content-center">
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <p>VGG19</p>
+                            <img id="History_VgggradImg" class="img-thumbnail">
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <p>GoogleNetV4</p>
+                            <img id="History_GoogradImg" class="img-thumbnail">
+                        </div>
+                        <br>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <p>EfficientNetV2</p>
+                            <img id="History_EffgradImg" class="img-thumbnail">
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <p>MobileNetV2</p>
+                            <img id="History_MobgradImg" class="img-thumbnail">
+                        </div>
+                    </div>
+                    <div class="gradcam-legend">
+                        <span>Low Activation</span>
+                        <div class="gradient-bar"></div>
+                        <span>High Activation</span>
+                    </div>
                     <p><strong>LIME Explanation:</strong></p>
-                    <img id="userImage1" alt="User Image" class="img-thumbnail mb-4">
-                    <img id="limeImage" alt="LIME Explanation Image" class="img-thumbnail mb-4">
-                </div>
+                    <div class="row justify-content-center">
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <p>VGG19</p>
+                            <img id="History_VgglimeImg" class="img-thumbnail">
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <p>GoogleNetV4</p>
+                            <img id="History_GoolimeImg" class="img-thumbnail">
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <p>AlexNet</p>
+                            <img id="History_AlexlimeImg" class="img-thumbnail">
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <p>ResNet152V2</p>
+                            <img id="History_ReslimeImg" class="img-thumbnail">
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <p>EfficientNetV2</p>
+                            <img id="History_EfflimeImg" class="img-thumbnail">
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <p>MobileNetV2</p>
+                            <img id="History_MoblimeImg" class="img-thumbnail">
+                        </div>
+                    </div>
             </div>
             <h4>Comment from Expert</h4>
             <p id="r_message"></p>
@@ -333,10 +378,17 @@ function updateHistoryTable(data) {
             
                 $("#recordId").val(data._id); 
                 updateHistoryTable(data);
+                $("#History_VgggradImg").attr("src", "data:image/png;base64," + data.Vgg_gradcam_img);
+                $("#History_GoogradImg").attr("src", "data:image/png;base64," + data.Goo_gradcam_img);
+                $("#History_EffgradImg").attr("src", "data:image/png;base64," + data.Eff_gradcam_img);
+                $("#History_MobgradImg").attr("src", "data:image/png;base64," + data.Mob_gradcam_img);
                 $("#userImage").attr("src", "data:image/png;base64," + data.Image_uploaded);
-                $("#gradcamImage").attr("src", "data:image/png;base64," + data.gradcam_image);
-                $("#userImage1").attr("src", "data:image/png;base64," + data.Image_uploaded);
-                $("#limeImage").attr("src", "data:image/png;base64," + data.lime_image);
+                $("#History_EfflimeImg").attr("src", "data:image/png;base64," + data.Eff_lime_img);
+                $("#History_VgglimeImg").attr("src", "data:image/png;base64," + data.Vgg_lime_img);
+                $("#History_MoblimeImg").attr("src", "data:image/png;base64," + data.Mob_lime_img);
+                $("#History_GoolimeImg").attr("src", "data:image/png;base64," + data.Goo_lime_img);
+                $("#History_ReslimeImg").attr("src", "data:image/png;base64," + data.Res_lime_img);
+                $("#History_AlexlimeImg").attr("src", "data:image/png;base64," + data.Alex_lime_img);
                 $("#r_message").text(data.user_comment);
             },
             error: function () {
