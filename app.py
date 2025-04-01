@@ -214,32 +214,64 @@ def disease_detection():
     # Perform AI model prediction
     results = AI_model.prediction(file_path)
 
-    # Grad-CAM and Confidence Score
-    gradcam_img, confidence_score = AI_model.plot_gradcam(file_path)
-    gradcam_filename = f"gradcam_{uuid.uuid4().hex}.png"
-    gradcam_path = os.path.join(app.config['Gradcam_Uploaded'], gradcam_filename)
-    gradcam_img.save(gradcam_path)
-    gradcam_img_base64 = get_image_data(gradcam_img)
+    # Grad-CAM
+    gradcam_img_Eff= AI_model.plot_Eff_gradcam(file_path)
+    gradcam_Eff_filename = f"gradcam_Eff{uuid.uuid4().hex}.png"
+    gradcam_path_Eff = os.path.join(app.config['Gradcam_Uploaded'], gradcam_Eff_filename)
+    gradcam_img_Eff.save(gradcam_path_Eff)
+    gradcam_img_Eff_base64 = get_image_data(gradcam_img_Eff)
+
+    gradcam_img_Vgg= AI_model.plot_Vgg_gradcam(file_path)
+    gradcam_Vgg_filename = f"gradcam_Vgg{uuid.uuid4().hex}.png"
+    gradcam_path_Vgg = os.path.join(app.config['Gradcam_Uploaded'], gradcam_Vgg_filename)
+    gradcam_img_Vgg.save(gradcam_path_Vgg)
+    gradcam_img_Vgg_base64 = get_image_data(gradcam_img_Vgg)
+
+    gradcam_img_Mob= AI_model.plot_mob_gradcam(file_path)
+    gradcam_mob_filename = f"gradcam_Mob{uuid.uuid4().hex}.png"
+    gradcam_path_Mob= os.path.join(app.config['Gradcam_Uploaded'], gradcam_mob_filename)
+    gradcam_img_Mob.save(gradcam_path_Mob)
+    gradcam_img_Mob_base64 = get_image_data(gradcam_img_Mob)
+
+    gradcam_img_Goo= AI_model.plot_Goo_gradcam(file_path)
+    gradcam_Goo_filename = f"gradcam_Goo{uuid.uuid4().hex}.png"
+    gradcam_path_Goo = os.path.join(app.config['Gradcam_Uploaded'], gradcam_Goo_filename)
+    gradcam_img_Goo.save(gradcam_path_Goo)
+    gradcam_img_Goo_base64 = get_image_data(gradcam_img_Goo)
 
     # LIME Explanation
-    lime_img = AI_model.explain_with_lime(file_path)
-    lime_filename = f"lime_{uuid.uuid4().hex}.png"
-    lime_path = os.path.join(app.config['LIME_Uploaded'], lime_filename)
-    lime_img.save(lime_path)
-    lime_img_base64 = get_image_data(lime_img)
-    """
-    shap_values = AI_model.explain_with_shap(file_path)
-    mean_shap = np.abs(shap_values).mean()
-    max_SHAP = np.abs(shap_values).max()
-    """
+    lime_outputs = []
 
-    database_op.add_disease_data(results, file_path, gradcam_path, lime_path, datetime.now())
+    lime_models = [
+        ("Eff", AI_model.eff_model, AI_model.load_and_preprocess_image),
+        ("Vgg", AI_model.VGG_model, AI_model.load_and_preprocess_image),
+        ("Mob", AI_model.mob_model, AI_model.load_and_preprocess_image),
+        ("Goo", AI_model.google_model, AI_model.load_and_preprocess_google_image),
+        ("Res", AI_model.res_model, AI_model.load_and_preprocess_image),
+        ("Alex", AI_model.alex_model, AI_model.load_and_preprocess_image),
+    ]
+
+    for prefix, model, preprocess_func in lime_models:
+        lime_img = AI_model.explain_with_lime(file_path, model, preprocess_func)
+        lime_filename = f"lime_{prefix}_{uuid.uuid4().hex}.png"
+        lime_path = os.path.join(app.config['LIME_Uploaded'], lime_filename)
+        lime_img.save(lime_path)
+        lime_outputs.append((prefix, lime_path, get_image_data(lime_img)))
+
+    lime_data = {f"{prefix}_lime_img": base64_img for prefix, _, base64_img in lime_outputs}
+
+    lime_paths_dict = {f"{prefix}_lime": path for prefix, path, _ in lime_outputs}
+
+    database_op.add_disease_data(results, file_path, gradcam_path_Eff, gradcam_path_Vgg, gradcam_path_Mob, gradcam_path_Goo, lime_paths_dict, datetime.now())
 
     return jsonify({
         'results': results,
         'Message': "Highlighted parts show the disease",
-        'gradcam_img': gradcam_img_base64,
-        'lime_img': lime_img_base64,
+        'Eff_gradcam_img': gradcam_img_Eff_base64,
+        'Vgg_gradcam_img': gradcam_img_Vgg_base64,
+        'Mob_gradcam_img': gradcam_img_Mob_base64,
+        'Goo_gradcam_img': gradcam_img_Goo_base64,
+        **lime_data,
         'user_image': url_for('uploaded_file', folder='Image_Uploaded', filename=filename, _external=True),
     })
 

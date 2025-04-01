@@ -155,8 +155,24 @@
                 </table>
                 <h4 id="Message"></h4>
                 <p><strong>Grad-CAM:</strong></p>
-                <img id="userImg" alt="User Uploaded Image" class="img-thumbnail mb-4">
-                <img id="gradcamImg" alt="Grad-CAM Image" class="img-thumbnail mb-4">
+                <div class="row justify-content-center">
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <p>VGG19</p>
+                        <img id="VgggradImg" class="img-thumbnail">
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <p>GoogleNetV4</p>
+                        <img id="GoogradImg" class="img-thumbnail">
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <p>EfficientNetV2</p>
+                        <img id="EffgradImg" class="img-thumbnail">
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <p>MobileNetV2</p>
+                        <img id="MobgradImg" class="img-thumbnail">
+                    </div>
+                </div>
                 <div class="gradcam-legend">
                     <span>Low Activation</span>
                     <div class="gradient-bar"></div>
@@ -164,8 +180,32 @@
                 </div>
                 <h4 id="ConfidenceScore" style="color: rgb(231, 12, 12); font-weight: bold;"></h4>
                 <p><strong>LIME Explanation:</strong></p>
-                <img id="userImg1" alt="User Uploaded Image" class="img-thumbnail mb-4">
-                <img id="limeImg" alt="LIME Explanation Image" class="img-thumbnail mb-4">
+                <div class="row justify-content-center">
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <p>VGG19</p>
+                        <img id="VgglimeImg" class="img-thumbnail">
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <p>GoogleNetV4</p>
+                        <img id="GoolimeImg" class="img-thumbnail">
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <p>AlexNet</p>
+                        <img id="AlexlimeImg" class="img-thumbnail">
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <p>ResNet152V2</p>
+                        <img id="ReslimeImg" class="img-thumbnail">
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <p>EfficientNetV2</p>
+                        <img id="EfflimeImg" class="img-thumbnail">
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <p>MobileNetV2</p>
+                        <img id="MoblimeImg" class="img-thumbnail">
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -365,10 +405,17 @@ function submitDiseaseForm() {
             $("#loadingDisease").hide();
 
             updateResultTable(response);
-            $("#gradcamImg").attr("src", "data:image/png;base64," + response.gradcam_img);
+            $("#VgggradImg").attr("src", "data:image/png;base64," + response.Vgg_gradcam_img);
+            $("#GoogradImg").attr("src", "data:image/png;base64," + response.Goo_gradcam_img);
+            $("#EffgradImg").attr("src", "data:image/png;base64," + response.Eff_gradcam_img);
+            $("#MobgradImg").attr("src", "data:image/png;base64," + response.Mob_gradcam_img);
             $('#userImg').attr("src", response.user_image);
-            $("#limeImg").attr("src", "data:image/png;base64," + response.lime_img);
-            $('#userImg1').attr("src", response.user_image);
+            $("#EfflimeImg").attr("src", "data:image/png;base64," + response.Eff_lime_img);
+            $("#VgglimeImg").attr("src", "data:image/png;base64," + response.Vgg_lime_img);
+            $("#MoblimeImg").attr("src", "data:image/png;base64," + response.Mob_lime_img);
+            $("#GoolimeImg").attr("src", "data:image/png;base64," + response.Goo_lime_img);
+            $("#ReslimeImg").attr("src", "data:image/png;base64," + response.Res_lime_img);
+            $("#AlexlimeImg").attr("src", "data:image/png;base64," + response.Alex_lime_img);
             $("#resultModal").modal('show');
         },
         error: function() {

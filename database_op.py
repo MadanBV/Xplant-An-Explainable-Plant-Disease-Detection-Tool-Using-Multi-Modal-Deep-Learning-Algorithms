@@ -11,12 +11,15 @@ User_message_data = db['User_message']
 Researcher_message = db['Research_message']
 Login_data = db['Login_data']
 
-def add_disease_data(results, file_path, gradcam_path, lime_path, timestamp):
+def add_disease_data(results, file_path, gradcam_path_Eff, gradcam_path_Vgg, gradcam_path_Mob, gradcam_path_Goo, lime_path, timestamp):
     try:
         prediction_data = {
             "results": results,
             "Image uploaded": file_path,
-            "gradcam image": gradcam_path,
+            "Eff gradcam image": gradcam_path_Eff,
+            "Vgg gradcam image": gradcam_path_Vgg,
+            "Mob gradcam image": gradcam_path_Mob,
+            "Goo gradcam image": gradcam_path_Goo,
             "lime image": lime_path,
             "timestamp": timestamp,
             "user_comment": "",

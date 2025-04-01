@@ -1,10 +1,7 @@
-import uuid
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.preprocessing import image # type: ignore
 from tensorflow.keras.applications.efficientnet_v2 import preprocess_input # type: ignore
-from tensorflow.keras.models import Sequential # type: ignore
-from tensorflow.keras.layers import Dense # type: ignore
 from lime import lime_image
 from skimage.segmentation import mark_boundaries
 import matplotlib.pyplot as plt
@@ -15,7 +12,6 @@ import cv2
 import os
 import pandas as pd
 import numpy as np
-import shap
 
 
 IMG_SIZE = (224, 224)  
@@ -59,44 +55,35 @@ def load_and_preprocess_google_image(img_path):
     return img_array
 
 #CNN
+def predict_model(model, img, crop_list, disease_list):
+    preds = model.predict(img)
+    pred_class = np.argmax(preds[0])
+    confidence = float(np.max(preds[0]))
+    return pred_class, confidence, crop_list[pred_class], disease_list[pred_class]
+
+
 def prediction(img_path):
     img = load_and_preprocess_image(img_path)
-
-    eff_preds = eff_model.predict(img)
-    eff_pred_class = np.argmax(eff_preds, axis=-1)[0]
-    eff_max_value = np.max(eff_preds, axis=-1)[0]  
-
-    res_preds = res_model.predict(img)
-    res_pred_class = np.argmax(res_preds, axis=-1)[0]
-    res_max_value = np.max(res_preds, axis=-1)[0]
-
-    mob_preds = mob_model.predict(img)
-    mob_pred_class = np.argmax(mob_preds, axis=-1)[0]
-    mob_max_value = np.max(mob_preds, axis=-1)[0]
-
     google_img = load_and_preprocess_google_image(img_path)
 
-    google_preds = google_model.predict(google_img)
-    google_pred_class = np.argmax(google_preds, axis=-1)[0]
-    google_max_value = np.max(google_preds, axis=-1)[0]  
-
-    alex_preds = alex_model.predict(img)
-    alex_pred_class = np.argmax(alex_preds, axis=-1)[0]
-    alex_max_value = np.max(alex_preds, axis=-1)[0]  
-
-    VGG_preds = VGG_model.predict(img)
-    VGG_pred_class = np.argmax(VGG_preds, axis=-1)[0]
-    VGG_max_value = np.max(VGG_preds, axis=-1)[0] 
-    
-    results = [
-        {"Model": "VGG19", "Plant": Crop_list[VGG_pred_class], "Disease": Disease_list[VGG_pred_class], "Confidence": float(VGG_max_value)},
-        {"Model": "GoogleNetV4", "Plant": Crop_list[google_pred_class], "Disease": Disease_list[google_pred_class], "Confidence": float(google_max_value)},
-        {"Model": "AlexNet", "Plant": Crop_list[alex_pred_class], "Disease": Disease_list[alex_pred_class], "Confidence": float(alex_max_value)},
-        {"Model": "EfficientNetV2", "Plant": Crop_list[eff_pred_class], "Disease": Disease_list[eff_pred_class], "Confidence": float(eff_max_value)},
-        {"Model": "ResNet152V2", "Plant": Crop_list[res_pred_class], "Disease": Disease_list[res_pred_class], "Confidence": float(res_max_value)},
-        {"Model": "MobileNetV2", "Plant": Crop_list[mob_pred_class], "Disease": Disease_list[mob_pred_class], "Confidence": float(mob_max_value)}
+    model_info = [
+        ("VGG19", VGG_model, img),
+        ("GoogleNetV4", google_model, google_img),
+        ("AlexNet", alex_model, img),
+        ("EfficientNetV2", eff_model, img),
+        ("ResNet152V2", res_model, img),
+        ("MobileNetV2", mob_model, img)
     ]
-    
+
+    results = []
+    for name, model, image_input in model_info:
+        cls_idx, confidence, crop, disease = predict_model(model, image_input, Crop_list, Disease_list)
+        results.append({
+            "Model": name,
+            "Plant": crop,
+            "Disease": disease,
+            "Confidence": confidence
+        })
     return results
 
 #Plant detection
@@ -135,26 +122,25 @@ def perturbation_visualization(image, mask):
 
     return Image.fromarray(overlay)
 
-def explain_with_lime(img_path):
-    
+def explain_with_lime(img_path, model, preprocess_func):
     img = tf.keras.preprocessing.image.load_img(img_path, target_size=IMG_SIZE)
     img_array = tf.keras.preprocessing.image.img_to_array(img) / 255.0
     explainer = lime_image.LimeImageExplainer()
-    
+
     explanation = explainer.explain_instance(
         img_array.astype('double'),
-        eff_model.predict,
-        top_labels=3,
-        hide_color=None, 
+        model.predict,
+        top_labels=1,
+        hide_color=None,
         num_samples=1000
     )
-    
+
     label = explanation.top_labels[0]
     temp, mask = explanation.get_image_and_mask(
         label, positive_only=True, num_features=5, hide_rest=False
     )
     lime_img = perturbation_visualization(img, mask)
-    return lime_img  
+    return lime_img
 
 
 #GRADCAM
@@ -180,7 +166,8 @@ def get_gradcam_heatmap(model, img_array, last_conv_layer_name, pred_index=None)
     heatmap = np.maximum(heatmap, 0) / (np.max(heatmap) + tf.keras.backend.epsilon())
     return heatmap
 
-def plot_gradcam(img_path, last_conv_layer_name="top_conv"):
+
+def plot_Eff_gradcam(img_path, last_conv_layer_name="top_conv"):
     img = tf.keras.preprocessing.image.load_img(img_path, target_size=IMG_SIZE)
     img_array = load_and_preprocess_image(img_path)
     
@@ -191,21 +178,42 @@ def plot_gradcam(img_path, last_conv_layer_name="top_conv"):
 
     superimposed_img = cv2.addWeighted(cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR), 0.6, heatmap, 0.4, 0)
 
-    # Get the model's confidence score
-    preds = eff_model.predict(img_array)
-    confidence_score = np.max(preds)  # Extract highest probability
+    return Image.fromarray(superimposed_img[..., ::-1])
 
-    return Image.fromarray(superimposed_img[..., ::-1]), confidence_score
 
-def explain_with_shap(img_path):
-    """Generate SHAP explanation for the prediction."""
+def plot_Vgg_gradcam(img_path, last_conv_layer_name="block5_conv4"):
     img = tf.keras.preprocessing.image.load_img(img_path, target_size=IMG_SIZE)
-    img_array = tf.keras.preprocessing.image.img_to_array(img) / 255.0
-    image =  np.expand_dims(img_array, axis=0)
-    background_data = np.random.randn(1, 224, 224, 3)  # Random background data for SHAP
-    explainer = shap.GradientExplainer(eff_model, background_data)
-    shap_values = explainer.shap_values(image)
-    shap_values_array = np.array(shap_values)
-    
-    return shap_values_array
+    img_array = load_and_preprocess_image(img_path)
 
+    heatmap = get_gradcam_heatmap(VGG_model, img_array, last_conv_layer_name)
+    heatmap = cv2.resize(heatmap, (img.size[0], img.size[1]))
+    heatmap = np.uint8(255 * heatmap)
+    heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
+    
+    superimposed_img = cv2.addWeighted(cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR), 0.6, heatmap, 0.4, 0)
+    return Image.fromarray(superimposed_img[..., ::-1])
+
+
+def plot_mob_gradcam(img_path, last_conv_layer_name="Conv_1"):
+    img = tf.keras.preprocessing.image.load_img(img_path, target_size=IMG_SIZE)
+    img_array = load_and_preprocess_image(img_path)
+
+    heatmap = get_gradcam_heatmap(mob_model, img_array, last_conv_layer_name="Conv_1")
+    heatmap = cv2.resize(heatmap, (img.size[0], img.size[1]))
+    heatmap = np.uint8(255 * heatmap)
+    heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
+    
+    superimposed_img = cv2.addWeighted(cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR), 0.6, heatmap, 0.4, 0)
+    return Image.fromarray(superimposed_img[..., ::-1])
+
+def plot_Goo_gradcam(img_path, last_conv_layer_name="mixed10"):
+    img = tf.keras.preprocessing.image.load_img(img_path, target_size=IMG_SIZE)
+    img_array = load_and_preprocess_google_image(img_path)
+
+    heatmap = get_gradcam_heatmap(google_model, img_array, last_conv_layer_name="mixed10")
+    heatmap = cv2.resize(heatmap, (img.size[0], img.size[1]))
+    heatmap = np.uint8(255 * heatmap)
+    heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
+    
+    superimposed_img = cv2.addWeighted(cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR), 0.6, heatmap, 0.4, 0)
+    return Image.fromarray(superimposed_img[..., ::-1])
