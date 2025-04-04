@@ -73,8 +73,8 @@
                             <tr>
                                 <th>Name</th>
                                 <th>Email</th>
-                                <th>Timestamp</th>
                                 <th>Message</th>
+                                <th>Date and Time</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -296,7 +296,7 @@ function updateResultTable(data) {
                 $("#GoolimeImg").attr("src", "data:image/png;base64," + data.Goo_lime_img);
                 $("#ReslimeImg").attr("src", "data:image/png;base64," + data.Res_lime_img);
                 $("#AlexlimeImg").attr("src", "data:image/png;base64," + data.Alex_lime_img);
-                $("#researcherComment").val(data.developer_comment || "No comments available.");
+                $("#researcherComment").text(data.developer_comment);
                 $("#diseaseRecordModal").modal("show");
             },
             error: function () {

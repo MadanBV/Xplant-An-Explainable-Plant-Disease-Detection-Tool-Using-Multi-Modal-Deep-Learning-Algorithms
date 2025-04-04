@@ -134,7 +134,9 @@ def get_history_record(index):
         'Goo_lime_img': Goo_lime_img,
         'Alex_lime_img': Alex_lime_img,
         'Res_lime_img': Res_lime_img,
-        'Mob_lime_img': Mob_lime_img
+        'Mob_lime_img': Mob_lime_img,
+        'user_comment': record.get("user_comment", ""),
+        'developer_comment': record.get("developer_comment", "")
     })
 
 @app.route("/research_dashboard")
@@ -222,6 +224,7 @@ def get_record(index):
     Mob_lime_img = get_image_data(Mob_lime_img)
     
     return jsonify({
+        '_id': record["_id"],
         'results': record["results"],
         'Message': "Highlighted parts show the disease",
         'Image_uploaded': user_img,
@@ -234,7 +237,8 @@ def get_record(index):
         'Goo_lime_img': Goo_lime_img,
         'Alex_lime_img': Alex_lime_img,
         'Res_lime_img': Res_lime_img,
-        'Mob_lime_img': Mob_lime_img
+        'Mob_lime_img': Mob_lime_img,
+        'developer_comment': record.get("developer_comment", "")
     })
 
 @app.route("/get_user_message")

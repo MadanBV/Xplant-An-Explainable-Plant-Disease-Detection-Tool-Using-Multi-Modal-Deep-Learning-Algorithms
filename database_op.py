@@ -52,7 +52,9 @@ def disp_disease_data():
             "Mob lime image": 1,
             "Goo lime image": 1,
             "Res lime image": 1,
-            "Alex lime image": 1
+            "Alex lime image": 1,
+            "user_comment": 1,
+            "developer_comment": 1
         }))
 
         for data in Disp_data:
