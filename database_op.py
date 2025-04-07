@@ -146,16 +146,16 @@ def researcher_message(message, timestamp):
 def disp_research_message():
     """Retrieve all user messages from MongoDB"""
     try:
-        disp_msg = list(User_message_data.find({}, {
+        disp_msg = list(Researcher_message.find({}, {
             "_id": 1,
             "message": 1,
             "timestamp": 1
         }))
         for msg in disp_msg:
-            msg['_id'] = str(msg['_id'])  # Convert ObjectId to string
+            msg['_id'] = str(msg['_id'])  
         return disp_msg
     except Exception as e:
-        print(f"Error retrieving user messages: {e}")
+        print(f"Error retrieving researcher messages: {e}")
         return []
 
 def add_comments(record_id, user_comment, developer_comment):

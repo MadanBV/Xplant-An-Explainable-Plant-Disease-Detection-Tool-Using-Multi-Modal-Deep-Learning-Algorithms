@@ -71,10 +71,10 @@
                     <table class="table table-bordered" id="userMessagesTable">
                         <thead>
                             <tr>
+                                <th>Date and Time</th>
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Message</th>
-                                <th>Date and Time</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -329,10 +329,10 @@ function updateResultTable(data) {
                     messages.forEach((message) => {
                         tableBody.append(`
                             <tr>
+                                <td>${message.timestamp}</td>
                                 <td>${message.name}</td>
                                 <td>${message.email}</td>
                                 <td>${message.message}</td>
-                                <td>${message.timestamp}</td>
                             </tr>
                         `);
                     });
@@ -354,8 +354,8 @@ function updateResultTable(data) {
                     messages.forEach((message) => {
                         tableBody.append(`
                             <tr>
-                                <td>${message.message}</td>
                                 <td>${message.timestamp}</td>
+                                <td>${message.message}</td>
                             </tr>
                         `);
                     });
