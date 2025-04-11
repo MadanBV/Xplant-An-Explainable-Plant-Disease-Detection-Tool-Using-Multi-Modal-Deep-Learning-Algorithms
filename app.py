@@ -25,7 +25,6 @@ app.config['Plant_Uploaded'] = 'Plant_Result'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 IMG_SIZE = (224, 224) 
 
-# Ensure directories exist
 for folder in ['Image_Uploaded', 'Gradcam_Result', 'LIME_Result', 'Plant_Result']:
     os.makedirs(folder, exist_ok=True)
 
@@ -392,7 +391,6 @@ def chatbot():
     try:
         openai.api_key = "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"
 
-        # Use gpt-3.5-turbo model
         response = openai.ChatCompletion.create(
             model="gpt-4o",
             messages=[
@@ -403,7 +401,6 @@ def chatbot():
             temperature=0.7
         )
         
-        # Extract the reply
         reply = response['choices'][0]['message']['content'].strip()
         return jsonify({"reply": reply})
     except Exception as e:

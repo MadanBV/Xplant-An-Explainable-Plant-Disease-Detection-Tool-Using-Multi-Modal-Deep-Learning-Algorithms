@@ -1,0 +1,73 @@
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator # type: ignore
+from tensorflow.keras.applications import MobileNetV2 # type: ignore
+from tensorflow.keras.layers import Dense, Flatten, Dropout, GlobalAveragePooling2D # type: ignore
+from tensorflow.keras.models import Model # type: ignore
+from tensorflow.keras.optimizers import Adam # type: ignore
+
+train_dir = r"C:\Crop_disease_prediction\New Plant Diseases Dataset\train"
+val_dir = r"C:\Crop_disease_prediction\New Plant Diseases Dataset\valid"
+
+IMG_SIZE = (224, 224) 
+BATCH_SIZE = 64
+EPOCHS = 20
+LEARNING_RATE = 1e-4
+
+train_datagen = ImageDataGenerator(rescale=1./255)
+
+val_datagen = ImageDataGenerator(rescale=1./255)
+
+train_generator = train_datagen.flow_from_directory(
+    train_dir,
+    target_size=IMG_SIZE,
+    batch_size=BATCH_SIZE,
+    class_mode='categorical'
+)
+
+valid_generator = val_datagen.flow_from_directory(
+    val_dir,
+    target_size=IMG_SIZE,
+    batch_size=BATCH_SIZE,
+    class_mode='categorical'
+)
+
+base_model = MobileNetV2(input_shape=(224, 224, 3), include_top=False, weights='imagenet')
+
+# Freeze base model layers
+base_model.trainable = False
+
+# Build Model
+x = base_model.output
+x = GlobalAveragePooling2D()(x)
+x = Dense(512, activation='relu')(x)
+x = Dropout(0.5)(x)
+predictions = Dense(len(train_generator.class_indices), activation='softmax')(x)
+
+model = Model(inputs=base_model.input, outputs=predictions)
+
+# Compile Model
+model.compile(optimizer=Adam(learning_rate=1e-4), loss='categorical_crossentropy', metrics=['accuracy'])
+
+history = model.fit(
+    train_generator,
+    validation_data=valid_generator,
+    epochs=EPOCHS,
+    verbose=1
+)
+
+base_model.trainable = True
+for layer in base_model.layers[:100]:
+    layer.trainable = False 
+
+model.compile(optimizer=Adam(learning_rate=1e-5), loss='categorical_crossentropy', metrics=['accuracy'])
+
+fine_tune_epochs = 10
+history_fine = model.fit(
+    train_generator,
+    validation_data=valid_generator,
+    epochs=fine_tune_epochs,
+    verbose=1
+)
+
+model.save(r'C:\Crop_disease_prediction\Project1\Trained models\MobileNetV2.keras')
+print("Training Completed")

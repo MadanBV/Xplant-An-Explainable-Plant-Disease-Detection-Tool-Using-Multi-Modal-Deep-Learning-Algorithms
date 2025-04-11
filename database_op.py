@@ -72,7 +72,7 @@ def add_plant_data(plant, file_path, timestamp):
             "plant": plant,
             "Image uploaded": file_path,
             "timestamp": timestamp,
-            "comments": []  # Initialize empty comments list
+            "comments": []  
         }
         result = Plant_data.insert_one(prediction_data)
         return str(result.inserted_id)
@@ -124,7 +124,7 @@ def disp_user_message():
             "timestamp": 1
         }))
         for msg in disp_msg:
-            msg['_id'] = str(msg['_id'])  # Convert ObjectId to string
+            msg['_id'] = str(msg['_id'])  
         return disp_msg
     except Exception as e:
         print(f"Error retrieving user messages: {e}")
