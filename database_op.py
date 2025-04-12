@@ -11,9 +11,11 @@ User_message_data = db['User_message']
 Researcher_message = db['Research_message']
 Login_data = db['Login_data']
 
-def add_disease_data(results, file_path, gradcam_path_Eff, gradcam_path_Vgg, gradcam_path_Mob, gradcam_path_Goo, lime_paths_dict, timestamp):
+def add_disease_data(user, email, results, file_path, gradcam_path_Eff, gradcam_path_Vgg, gradcam_path_Mob, gradcam_path_Goo, lime_paths_dict, timestamp):
     try:
         prediction_data = {
+            "user": user,
+            "email" : email,
             "results": results,
             "Image uploaded": file_path,
             "Eff gradcam image": gradcam_path_Eff,
@@ -41,6 +43,8 @@ def disp_disease_data():
     try:
         Disp_data = list(Disease_data.find({}, {
             "_id": 1,
+            "user": 1,
+            "email": 1,
             "results": 1,
             "Image uploaded": 1,
             "Eff gradcam image": 1,
@@ -175,18 +179,18 @@ def add_comments(record_id, user_comment, developer_comment):
         print(f"Error adding comments: {e}")
         return False
 
-def add_user(username, password, role):
+def add_user(username, email, password, role):
     try:
-        user_data = {"username": username, "password": password, "role": role}
+        user_data = {"username": username, "email": email, "password": password, "role": role}
         Login_data.insert_one(user_data)
         return True
     except Exception as e:
         print(f"Error adding user: {e}")
         return False
 
-def validate_login(username, password, role):
+def validate_login(email, password, role):
     try:
-        user = Login_data.find_one({"username": username, "password": password, "role": role})
+        user = Login_data.find_one({"email": email, "password": password, "role": role})
         return user is not None
     except Exception as e:
         print(f"Error validating login: {e}")

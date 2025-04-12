@@ -59,33 +59,35 @@ def index():
 
     return render_template('index.html', contact_message=success_message)
 
-@app.route("/user_dashboard", methods=['GET', "POST"])
-def user_dashboard():
-    
-    name = request.form.get('name')
-    email = request.form.get('email')
-    message = request.form.get('message')
-    timestamp = datetime.now()
 
+@app.route('/user_dashboard', methods=['GET', 'POST'])
+def user_dashboard():
+    if 'role' not in session or session['role'] != 'user':
+        return redirect(url_for('login', role='user'))
+    
     success_message = None
-    if name and email and message:
-        try:
-            database_op.save_contact(name, email, message, timestamp)
+
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        message = request.form.get('message')
+        if name and email and message:
+            database_op.save_contact(name, email, message, datetime.now())
             success_message = "Your message has been saved. We'll get back to you soon!"
-        except Exception as e:
-            success_message = f"An error occurred: {str(e)}"
-    elif request.method == "POST":
-        success_message = "All fields are required."
+        elif request.method == "POST":
+            success_message = "All fields are required."
 
     return render_template('user_dashboard.html', contact_message=success_message)
 
 @app.route("/get_history_record/<int:index>")
 def get_history_record(index):
-    
+    user = session.get('username')
+    email = session.get('email')
     disease_data = database_op.disp_disease_data()
-    if index < 0 or index >= len(disease_data):
+    user_data = [entry for entry in disease_data if entry.get('user') == user]
+    if index < 0 or index >= len(user_data):
         return jsonify({"error": "Index out of range"}), 400
-    record = disease_data[index]
+    record = user_data[index]
 
     user_img = image.load_img(record["Image uploaded"], target_size=IMG_SIZE)
     user_img = get_image_data(user_img)
@@ -224,6 +226,8 @@ def get_record(index):
     
     return jsonify({
         '_id': record["_id"],
+        'User': record.get("user"),
+        "email": record.get("email"),
         'results': record["results"],
         'Message': "Highlighted parts show the disease",
         'Image_uploaded': user_img,
@@ -264,6 +268,8 @@ def get_Research_message():
 
 @app.route("/disease_detection", methods=["POST"])
 def disease_detection():
+    user = session.get('username')
+    email = session.get('email')
     if "file" not in request.files:
         flash("No file part")
         return redirect(request.url)
@@ -328,7 +334,7 @@ def disease_detection():
 
     lime_paths_dict = {f"{prefix}_lime": path for prefix, path, _ in lime_outputs}
 
-    database_op.add_disease_data(results, file_path, gradcam_path_Eff, gradcam_path_Vgg, gradcam_path_Mob, gradcam_path_Goo, lime_paths_dict, datetime.now())
+    database_op.add_disease_data(user, email, results, file_path, gradcam_path_Eff, gradcam_path_Vgg, gradcam_path_Mob, gradcam_path_Goo, lime_paths_dict, datetime.now())
 
     return jsonify({
         'results': results,
@@ -410,18 +416,20 @@ def chatbot():
 @app.route('/login/<role>', methods=['GET', 'POST'])
 def login(role):
     if request.method == 'POST':
-        username = request.form['username']
+        email = request.form['email']
         password = request.form['password']
 
-        if database_op.validate_login(username, password, role):
-            session['username'] = username
+        if database_op.validate_login(email, password, role):
+            session['email'] = email
             session['role'] = role
-            if role == 'researcher':
+            if role == 'user':
+                return redirect(url_for('user_dashboard'))
+            elif role == 'researcher':
                 return redirect(url_for('research_dashboard'))
             elif role == 'developer':
                 return redirect(url_for('developer_dashboard'))
         else:
-            flash('Invalid username or password!')
+            flash('Invalid credentials')
             return redirect(url_for('login', role=role))
 
     return render_template('login.html', role=role)
@@ -435,16 +443,35 @@ def logout():
 @app.route("/add_user", methods=["POST"])
 def add_user():
     username = request.form.get("username")
+    email = request.form.get("email")
     password = request.form.get("password")
     role = request.form.get("role")
 
     if username and password and role:
-        database_op.add_user(username, password, role)
+        database_op.add_user(username, email, password, role)
         flash("User added successfully!")
     else:
         flash("Please provide all required fields.")
     
     return redirect(url_for("developer_dashboard"))
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        confirm = request.form['confirm']
+
+        if password != confirm:
+            flash('Passwords do not match!')
+        elif database_op.validate_login(email, password, 'user'):
+            flash('Email already exists!')
+        else:
+            database_op.add_user(username, email, password, 'user')
+            flash('User registered! Please login.')
+            return redirect(url_for('login', role='user'))
+    return render_template('signup.html')
 
 
 if __name__ == "__main__":

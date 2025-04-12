@@ -72,6 +72,8 @@
                 <h5 class="modal-title" id="recordModalLabel">Disease Data Record</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
             </div>
+            <h4 id="user">Name: </h4>
+            <h4 id="email">Email Id: </h4>
             <div class="modal-body text-center">
                 <table class="table table-bordered text-center">
                     <thead class="thead-dark">
@@ -202,6 +204,8 @@ function updateResultTable(data) {
                 $("#GoolimeImg").attr("src", "data:image/png;base64," + data.Goo_lime_img);
                 $("#ReslimeImg").attr("src", "data:image/png;base64," + data.Res_lime_img);
                 $("#AlexlimeImg").attr("src", "data:image/png;base64," + data.Alex_lime_img);
+                $("#user").val(data.User); 
+                $("#email").val(data.email); 
             },
             error: function () {
                 alert("Error fetching record.");
