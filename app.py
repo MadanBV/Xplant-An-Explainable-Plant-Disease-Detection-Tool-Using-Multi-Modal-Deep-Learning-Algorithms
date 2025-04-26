@@ -84,7 +84,7 @@ def get_history_record(index):
     user = session.get('username')
     email = session.get('email')
     disease_data = database_op.disp_disease_data()
-    user_data = [entry for entry in disease_data if entry.get('user') == user]
+    user_data = [entry for entry in disease_data if entry.get('user') == user and entry.get('email') == email]
     if index < 0 or index >= len(user_data):
         return jsonify({"error": "Index out of range"}), 400
     record = user_data[index]
@@ -475,4 +475,4 @@ def signup():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)

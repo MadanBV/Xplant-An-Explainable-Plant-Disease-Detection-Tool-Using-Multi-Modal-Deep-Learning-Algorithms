@@ -24,8 +24,8 @@
 
 <section id="home" class="py-5 text-center bg-light">
     <div class="container">
-        <h1 class="display-4">Research Dashboard</h1>
-        <p class="lead">View and navigate disease detection data with ease and precision.</p>
+        <h1 class="display-4 font-weight-bold">Research Dashboard</h1>
+        <p class="lead font-weight-bold">View and navigate disease detection data with ease and precision.</p>
     </div>
 </section>
 
@@ -72,8 +72,6 @@
                 <h5 class="modal-title" id="recordModalLabel">Disease Data Record</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
             </div>
-            <h4 id="user">Name: </h4>
-            <h4 id="email">Email Id: </h4>
             <div class="modal-body text-center">
                 <table class="table table-bordered text-center">
                     <thead class="thead-dark">
@@ -88,7 +86,13 @@
                     </tbody>
                 </table>
                 <div class="my-3">
-                    <p><strong>Grad-CAM Image:</strong></p>
+                    <h3><strong>Uploaded Image:</strong></h3>
+                    <div>
+                        <img id="userImage" class="img-thumbnail">
+                    </div>
+                    <br>
+                    <br>
+                    <h3><strong>Grad-CAM Image:</strong></h3>
                     <div class="row justify-content-center">
                         <div class="col-md-6 col-lg-4 mb-3">
                             <p>VGG19</p>
@@ -109,8 +113,10 @@
                         </div>
                     </div>
                 </div>
+                <br>
+                <br>
                 <div class="my-3">
-                    <p><strong>LIME Explanation:</strong></p>
+                    <h3><strong>LIME Explanation:</strong></h3>
                     <div class="row justify-content-center">
                         <div class="col-md-6 col-lg-4 mb-3">
                             <p>VGG19</p>
@@ -224,9 +230,24 @@ function updateResultTable(data) {
     }
 
     function nextRecord() {
-        currentIndex++;
-        fetchRecord(currentIndex);
-    }
+    currentIndex++;
+    $.ajax({
+        url: `/get_record/${currentIndex}`,
+        method: "GET",
+        success: function(data) {
+            if (data.error) {
+                alert("End of records.");
+                currentIndex--;  
+            } else {
+                fetchRecord(currentIndex);
+            }
+        },
+        error: function() {
+            alert("End of records.");
+            currentIndex--;  
+        }
+    });
+}
 
     function submitComment() {
         const formData = $("#commentForm").serialize(); // Serialize form data
