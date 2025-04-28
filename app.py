@@ -395,7 +395,7 @@ def chatbot():
         return jsonify({"reply": "Please provide a message."})
 
     try:
-        openai.api_key = "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"
+        openai.api_key = "Add your API key here"
 
         response = openai.ChatCompletion.create(
             model="gpt-4o",
